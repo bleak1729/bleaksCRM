@@ -137,45 +137,6 @@ function NavItem({
   );
 }
 
-/* ── Action sub-item ─────────────────────────────────────────── */
-function ActionItem({
-  id, icon, label, accent, collapsed,
-  onClick,
-}: {
-  id: string; icon: React.ReactNode; label: string;
-  accent?: boolean; collapsed: boolean;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      onClick={onClick}
-      className="relative w-full flex items-center overflow-hidden"
-      style={{
-        gap: 8,
-        padding: collapsed ? '8px 0' : '7px 10px 7px 28px',
-        borderRadius: 'var(--r2)',
-        border: 'none',
-        background: 'transparent',
-        color: accent ? 'var(--ac)' : 'var(--txt2)',
-        fontFamily: 'var(--fb)',
-        fontSize: '13px',
-        fontWeight: accent ? 600 : 400,
-        cursor: 'pointer',
-        textAlign: 'left',
-        transition: 'background .15s, color .15s',
-        justifyContent: collapsed ? 'center' : 'flex-start',
-      }}
-      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
-      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-      title={collapsed ? label : undefined}
-    >
-      <span style={{ color: accent ? 'var(--ac)' : 'var(--txt3)', flexShrink: 0 }}>{icon}</span>
-      {!collapsed && <span>{label}</span>}
-      {collapsed && <span className="sb-tooltip">{label}</span>}
-    </button>
-  );
-}
-
 /* ── Main sidebar ────────────────────────────────────────────── */
 export function Sidebar({
   health, theme, onToggleTheme, leads,
