@@ -403,7 +403,7 @@ export default function CustomerModal({
                 <div>
                   <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: 10 }}>
                     {onSaveInvoice && !isNew && (
-                      <button onClick={() => setEditInvoice({ customer_id: cid, invoice_number: '', issue_date: new Date().toISOString().slice(0,10), amount: 0, tax_pct: 21, status: 'cotizacion', description: '', notes: '' })}
+                      <button onClick={() => setEditInvoice({ customer_id: cid, invoice_number: '', issue_date: new Date().toISOString().slice(0,10), amount: 0, tax_pct: 21, status: 'borrador', description: '', notes: '' })}
                         style={{ fontSize: 12, color: 'var(--ac)', background: 'var(--ac-tint)', border: '1px solid var(--ac)', borderRadius: 'var(--r2)', padding: '5px 12px', cursor: 'pointer', fontWeight: 600, fontFamily: 'var(--fb)' }}>
                         + Nueva factura
                       </button>
