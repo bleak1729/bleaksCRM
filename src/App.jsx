@@ -78,16 +78,19 @@ export default function App() {
 
   // ── Load on mount ──────────────────────────────────────────────
   useEffect(() => {
-    Promise.all([loadData(), loadCustomers(), loadProjects()])
-      .then(([d, c, p]) => {
+    // Leads: crítico — fallo aquí sí bloquea
+    loadData()
+      .then(d => {
         setLeads(   d.leads    || [])
         setContacts(d.contacts || {})
         setNotes(   d.notes    || {})
         setStatuses(d.statuses || {})
-        setCustomers(c || [])
-        setProjects(p || [])
       })
       .catch(err => console.error('Error cargando datos:', err))
+
+    // Customers/Projects: independientes — si la tabla aún no existe en Supabase no rompen la app
+    loadCustomers().then(c => setCustomers(c || [])).catch(() => {})
+    loadProjects().then(p => setProjects(p  || [])).catch(() => {})
 
     getHealth()
       .then(setHealth)
