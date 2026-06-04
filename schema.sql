@@ -174,6 +174,9 @@ CREATE TABLE IF NOT EXISTS documents (
 CREATE INDEX IF NOT EXISTS idx_documents_customer ON documents(customer_id);
 ALTER TABLE documents DISABLE ROW LEVEL SECURITY;
 
+-- ── Line items para facturas ─────────────────────────────────────
+ALTER TABLE invoices ADD COLUMN IF NOT EXISTS line_items JSONB NOT NULL DEFAULT '[]';
+
 -- ── Campos Google Drive en customers y projects ───────────────────
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS drive_folder_url TEXT NOT NULL DEFAULT '';
 ALTER TABLE projects  ADD COLUMN IF NOT EXISTS drive_folder_url TEXT NOT NULL DEFAULT '';
