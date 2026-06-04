@@ -51,6 +51,40 @@ export const analyzeLead = ({ url, sector, phone, email }) =>
     body:    JSON.stringify({ url, sector, phone, email }),
   }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
 
+// ── Customers ─────────────────────────────────────────────────────
+export const loadCustomers = () =>
+  fetch('/api/customers', { headers: authHeaders() })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const createCustomer = data =>
+  fetch('/api/customers', { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const updateCustomer = (id, data) =>
+  fetch(`/api/customers/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const deleteCustomer = id =>
+  fetch(`/api/customers/${id}`, { method: 'DELETE', headers: authHeaders() })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+// ── Projects ──────────────────────────────────────────────────────
+export const loadProjects = (customerId) =>
+  fetch(`/api/projects${customerId ? `?customer_id=${customerId}` : ''}`, { headers: authHeaders() })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const createProject = data =>
+  fetch('/api/projects', { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const updateProject = (id, data) =>
+  fetch(`/api/projects/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const deleteProject = id =>
+  fetch(`/api/projects/${id}`, { method: 'DELETE', headers: authHeaders() })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
 // Búsqueda síncrona — devuelve { leads, total, query } directamente
 export const startSearch = body =>
   fetch('/api/search', {
