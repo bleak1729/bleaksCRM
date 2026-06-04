@@ -283,9 +283,8 @@ export function Sidebar({
               <div className="min-w-0">
                 <div className="sb-brand-title" style={{ fontSize: 15 }}>
                   Bleak's Solutions
-                  <span style={{ fontSize: '11px', fontWeight: 400, opacity: .55 }}>CRM</span>
                 </div>
-                <div className="sb-brand-sub">B2B Lead Management</div>
+                <div className="sb-brand-sub">CRM</div>
               </div>
             </div>
           ) : (
