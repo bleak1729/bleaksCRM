@@ -416,7 +416,6 @@ export function Sidebar({
           )}
         </div>
 
-        <input ref={importRef} type="file" accept=".json" className="hidden" onChange={onImport}/>
       </aside>
     </>
   );
