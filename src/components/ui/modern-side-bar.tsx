@@ -226,12 +226,6 @@ export function Sidebar({
     : supabaseOk                          ? '✓ Google Maps · Supabase'
     : '✓ Google Maps API';
 
-  const actions = [
-    { id: 'csv',    icon: <TableProperties size={14}/>,  label: 'Exportar CSV'  },
-    { id: 'json',   icon: <FileJson size={14}/>,         label: 'Exportar JSON' },
-    { id: 'import', icon: <Upload size={14}/>,           label: 'Importar JSON' },
-  ];
-
   return (
     <>
       {/* ── Hamburger móvil */}
