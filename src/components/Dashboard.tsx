@@ -88,7 +88,7 @@ function LeadRow({ lead, badge, badgeVariant }: { lead: Lead; badge?: string; ba
 }
 
 /* ── Dashboard ──────────────────────────────────────────────────── */
-export default function Dashboard({ leads, statuses, contacts, onNavigate }: Props) {
+export default function Dashboard({ leads, statuses, contacts, customers = [], onNavigate }: Props) {
 
   const m = useMemo(() => {
     const total        = leads.length
