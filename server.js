@@ -730,7 +730,10 @@ app.get('/api/invoices/:id/pdf', requireAuth, async (req, res) => {
     .from('invoices').select('*, customers(name, address, email, phone)').eq('id', req.params.id).single();
   if (invErr || !inv) return res.status(404).json({ error: 'Factura no encontrada' });
 
-  const subtotal = Number(inv.amount) || 0;
+  const items    = Array.isArray(inv.line_items) && inv.line_items.length ? inv.line_items : [];
+  const subtotal = items.length
+    ? items.reduce((s, it) => s + (Number(it.quantity) || 0) * (Number(it.unit_price) || 0), 0)
+    : Number(inv.amount) || 0;
   const taxAmt   = subtotal * (Number(inv.tax_pct) || 21) / 100;
   const total    = subtotal + taxAmt;
   const fmtEur   = v => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(v);
