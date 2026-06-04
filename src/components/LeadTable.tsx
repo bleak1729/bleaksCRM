@@ -64,7 +64,19 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
   const [sortCol,     setSortCol]     = useState<SortCol>('name')
   const [sortDir,     setSortDir]     = useState<SortDir>('asc')
   const [confirmId,   setConfirmId]   = useState<string | null>(null)
-  const importRef = useRef<HTMLInputElement>(null)
+  const [exportOpen,  setExportOpen]  = useState(false)
+  const importRef   = useRef<HTMLInputElement>(null)
+  const exportRef   = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    const handler = (e: MouseEvent) => {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+        setExportOpen(false)
+      }
+    }
+    document.addEventListener('mousedown', handler)
+    return () => document.removeEventListener('mousedown', handler)
+  }, [])
 
   const confirmLead = confirmId ? leads.find(l => l.id === confirmId) : null
 
