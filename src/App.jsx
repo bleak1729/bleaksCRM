@@ -135,6 +135,25 @@ export default function App() {
         persist({ statuses: next })
         return next
       })
+      // Auto-crear cliente cuando el lead pasa a 'cliente'
+      if (updates.status === 'cliente') {
+        const lead = leadsRef.current.find(l => l.id === id)
+        const alreadyCustomer = customersRef.current.some(c => c.lead_id === id)
+        if (lead && !alreadyCustomer) {
+          const data = {
+            lead_id:  id,
+            name:     lead.name     || '',
+            sector:   lead.sector   || '',
+            email:    lead.email    || '',
+            phone:    lead.phone    || '',
+            address:  lead.loc      || '',
+            website:  lead.url && !lead.url.startsWith('Sin web') ? lead.url : '',
+          }
+          createCustomer(data)
+            .then(c => setCustomers(prev => [c, ...prev]))
+            .catch(() => {})
+        }
+      }
     }
     if (updates.note !== undefined) {
       setNotes(prev => {
@@ -151,6 +170,53 @@ export default function App() {
       })
     }
   }, [persist])
+
+  // ── Customer handlers ──────────────────────────────────────────
+  const handleSaveCustomer = useCallback(async (customer) => {
+    try {
+      if (customer.id) {
+        const updated = await updateCustomer(customer.id, customer)
+        setCustomers(prev => prev.map(c => c.id === updated.id ? updated : c))
+        showToast('Cliente actualizado')
+      } else {
+        const created = await createCustomer(customer)
+        setCustomers(prev => [created, ...prev])
+        showToast('Cliente creado')
+      }
+    } catch { showToast('Error al guardar cliente') }
+  }, [showToast])
+
+  const handleDeleteCustomer = useCallback(async (id) => {
+    try {
+      await deleteCustomer(id)
+      setCustomers(prev => prev.filter(c => c.id !== id))
+      setProjects(prev => prev.filter(p => p.customer_id !== id))
+      showToast('Cliente eliminado')
+    } catch { showToast('Error al eliminar cliente') }
+  }, [showToast])
+
+  // ── Project handlers ───────────────────────────────────────────
+  const handleSaveProject = useCallback(async (project) => {
+    try {
+      if (project.id) {
+        const updated = await updateProject(project.id, project)
+        setProjects(prev => prev.map(p => p.id === updated.id ? updated : p))
+        showToast('Proyecto actualizado')
+      } else {
+        const created = await createProject(project)
+        setProjects(prev => [created, ...prev])
+        showToast('Proyecto creado')
+      }
+    } catch { showToast('Error al guardar proyecto') }
+  }, [showToast])
+
+  const handleDeleteProject = useCallback(async (id) => {
+    try {
+      await deleteProject(id)
+      setProjects(prev => prev.filter(p => p.id !== id))
+      showToast('Proyecto eliminado')
+    } catch { showToast('Error al eliminar proyecto') }
+  }, [showToast])
 
   // ── Google Maps search ────────────────────────────────────────
   const runSearch = useCallback(async ({ city, radius, sector }) => {
