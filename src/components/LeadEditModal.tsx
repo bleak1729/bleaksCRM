@@ -2,8 +2,9 @@ import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
   X, Phone, Globe, MapPin, Tag, Zap, Star,
-  StickyNote, CheckCircle2, Mail, Users, CircleCheck,
+  StickyNote, CheckCircle2, Mail, Users, CircleCheck, Sparkles, Loader2,
 } from 'lucide-react'
+import { analyzeLead } from '../api.js'
 import { Badge }      from '@/components/ui/badge'
 import { Button }     from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -65,7 +66,25 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
   const [curStatus,  setCurStatus]  = useState(status)
   const [curNote,    setCurNote]    = useState(note)
   const [curContact, setCurContact] = useState<ContactState>(contact)
+  const [curFlaws,   setCurFlaws]   = useState<string[]>(lead.flaws || [])
+  const [curSaas,    setCurSaas]    = useState<string[]>(lead.saas  || [])
+  const [analyzing,  setAnalyzing]  = useState(false)
   const firstRef = useRef<HTMLInputElement>(null)
+
+  const handleAnalyze = async () => {
+    setAnalyzing(true)
+    try {
+      const result = await analyzeLead({
+        url:    url.trim(),
+        sector: sector,
+        phone:  phone.trim(),
+        email:  email.trim(),
+      })
+      setCurFlaws(result.flaws || [])
+      setCurSaas(result.saas  || [])
+    } catch { /* silencioso */ }
+    finally { setAnalyzing(false) }
+  }
 
   useEffect(() => { setTimeout(() => firstRef.current?.focus(), 60) }, [])
   useEffect(() => {
@@ -90,7 +109,7 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
 
   const handleSave = () =>
     onSave(lead.id, {
-      lead:    { name, sector, loc, url, phone, email, priority },
+      lead:    { name, sector, loc, url, phone, email, priority, flaws: curFlaws, saas: curSaas },
       status:  curStatus,
       note:    curNote,
       contact: curContact,
@@ -342,13 +361,25 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
               className="sticky top-0 rounded-[var(--r3)] p-5 space-y-0"
               style={{ background: 'var(--bg3)', border: '1px solid var(--bor2)' }}
             >
-              <h4
-                className="text-sm font-semibold flex items-center gap-1.5"
-                style={{ color: 'var(--txt)' }}
-              >
-                <Star size={14} style={{ color: 'var(--ac)' }} />
-                Diagnóstico de presencia digital
-              </h4>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
+                <h4
+                  className="text-sm font-semibold flex items-center gap-1.5"
+                  style={{ color: 'var(--txt)', margin: 0 }}
+                >
+                  <Star size={14} style={{ color: 'var(--ac)' }} />
+                  Diagnóstico digital
+                </h4>
+                <Button
+                  type="button" variant="ghost" size="sm" shape="square"
+                  onClick={handleAnalyze} disabled={analyzing}
+                  style={{ fontFamily: 'var(--fd)', fontWeight: 600, fontSize: 11, background: 'var(--ac-tint)', color: 'var(--ac)', border: '1px solid var(--ac)', padding: '4px 10px', height: 'auto' }}
+                >
+                  {analyzing
+                    ? <><Loader2 size={11} className="animate-spin" /> Analizando...</>
+                    : <><Sparkles size={11} /> Analizar</>
+                  }
+                </Button>
+              </div>
               <p className="mt-2 text-sm leading-5" style={{ color: 'var(--txt2)' }}>
                 Análisis automático basado en datos de Google Maps y web pública.
               </p>
@@ -379,18 +410,16 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
               </ul>
 
               {/* Flaws */}
-              {lead.flaws?.length > 0 && (
+              {curFlaws.length > 0 && (
                 <>
                   <div style={{ height: 1, background: 'var(--bor)', margin: '12px 0' }} />
                   <div>
-                    <p
-                      className="text-xs font-bold uppercase tracking-widest mb-2"
-                      style={{ color: 'var(--txt3)', letterSpacing: '.06em' }}
-                    >
+                    <p className="text-xs font-bold uppercase tracking-widest mb-2"
+                      style={{ color: 'var(--txt3)', letterSpacing: '.06em' }}>
                       Fallos detectados
                     </p>
                     <div className="flex flex-wrap gap-1.5">
-                      {lead.flaws.map(f => (
+                      {curFlaws.map(f => (
                         <Badge key={f} variant="danger" style={{ fontSize: 11 }}>{f}</Badge>
                       ))}
                     </div>
@@ -399,19 +428,17 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
               )}
 
               {/* SaaS opportunities */}
-              {lead.saas?.length > 0 && (
-                <div className={lead.flaws?.length ? 'mt-3' : ''}>
-                  {!lead.flaws?.length && (
+              {curSaas.length > 0 && (
+                <div className={curFlaws.length ? 'mt-3' : ''}>
+                  {!curFlaws.length && (
                     <div style={{ height: 1, background: 'var(--bor)', margin: '12px 0' }} />
                   )}
-                  <p
-                    className="text-xs font-bold uppercase tracking-widest mb-2"
-                    style={{ color: 'var(--txt3)', letterSpacing: '.06em' }}
-                  >
+                  <p className="text-xs font-bold uppercase tracking-widest mb-2"
+                    style={{ color: 'var(--txt3)', letterSpacing: '.06em' }}>
                     Oportunidades SaaS
                   </p>
                   <div className="flex flex-wrap gap-1.5">
-                    {lead.saas.map(s => (
+                    {curSaas.map(s => (
                       <Badge key={s} variant="success" style={{ fontSize: 11 }}>{s}</Badge>
                     ))}
                   </div>

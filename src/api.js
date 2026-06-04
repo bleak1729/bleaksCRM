@@ -43,6 +43,14 @@ export const saveData  = data =>
     body:    JSON.stringify(data),
   }).then(r => r.json())
 
+// Análisis digital de un lead (URL + sector + PageSpeed)
+export const analyzeLead = ({ url, sector, phone, email }) =>
+  fetch('/api/analyze', {
+    method:  'POST',
+    headers: authHeaders(),
+    body:    JSON.stringify({ url, sector, phone, email }),
+  }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
 // Búsqueda síncrona — devuelve { leads, total, query } directamente
 export const startSearch = body =>
   fetch('/api/search', {

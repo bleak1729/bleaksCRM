@@ -1,13 +1,15 @@
 import { useState } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Plus } from 'lucide-react'
-import { Button }   from '@/components/ui/button'
-import { Input }    from '@/components/ui/input'
-import { Label }    from '@/components/ui/label'
+import { X, Plus, Sparkles, Loader2 } from 'lucide-react'
+import { Button }    from '@/components/ui/button'
+import { Input }     from '@/components/ui/input'
+import { Label }     from '@/components/ui/label'
 import { Separator } from '@/components/ui/separator'
+import { Badge }     from '@/components/ui/badge'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
+import { analyzeLead } from '../api.js'
 
 const SECTORS = [
   'Salud','Veterinaria','Belleza','Hosteleria','Retail',
@@ -20,13 +22,33 @@ interface Props {
 }
 
 export default function NewLeadModal({ onSave, onClose }: Props) {
-  const [name,     setName]     = useState('')
-  const [sector,   setSector]   = useState('')
-  const [loc,      setLoc]      = useState('')
-  const [url,      setUrl]      = useState('')
-  const [phone,    setPhone]    = useState('')
-  const [email,    setEmail]    = useState('')
-  const [priority, setPriority] = useState('med')
+  const [name,      setName]      = useState('')
+  const [sector,    setSector]    = useState('')
+  const [loc,       setLoc]       = useState('')
+  const [url,       setUrl]       = useState('')
+  const [phone,     setPhone]     = useState('')
+  const [email,     setEmail]     = useState('')
+  const [priority,  setPriority]  = useState('med')
+  const [flaws,     setFlaws]     = useState<string[]>([])
+  const [saas,      setSaas]      = useState<string[]>([])
+  const [analyzing, setAnalyzing] = useState(false)
+  const [analyzed,  setAnalyzed]  = useState(false)
+
+  const handleAnalyze = async () => {
+    setAnalyzing(true)
+    try {
+      const result = await analyzeLead({
+        url:    url.trim() || '',
+        sector: sector || 'Servicios',
+        phone:  phone.trim(),
+        email:  email.trim(),
+      })
+      setFlaws(result.flaws || [])
+      setSaas(result.saas  || [])
+      setAnalyzed(true)
+    } catch { /* silencioso */ }
+    finally { setAnalyzing(false) }
+  }
 
   const handleSave = () => {
     if (!name.trim()) return
@@ -41,8 +63,8 @@ export default function NewLeadModal({ onSave, onClose }: Props) {
       priority,
       rating:   null,
       reviews:  0,
-      flaws:    [],
-      saas:     [],
+      flaws,
+      saas,
       source:   'manual',
       lat:      null,
       lng:      null,
@@ -146,6 +168,49 @@ export default function NewLeadModal({ onSave, onClose }: Props) {
               <Input value={loc} onChange={e => setLoc(e.target.value)}
                 placeholder="C/ Ejemplo 1, Valladolid" style={{ fontFamily: 'var(--fb)' }} />
             </div>
+          </div>
+        </div>
+
+          {/* Botón analizar + resultados */}
+          <Separator />
+          <div>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: analyzed ? 10 : 0 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: 'var(--txt2)', fontFamily: 'var(--fb)' }}>
+                Diagnóstico digital
+              </span>
+              <Button
+                type="button" variant="ghost" size="sm" shape="square"
+                onClick={handleAnalyze}
+                disabled={analyzing}
+                style={{ fontFamily: 'var(--fd)', fontWeight: 600, background: 'var(--ac-tint)', color: 'var(--ac)', border: '1px solid var(--ac)', fontSize: 12 }}
+              >
+                {analyzing
+                  ? <><Loader2 size={12} className="animate-spin" /> Analizando...</>
+                  : <><Sparkles size={12} /> {analyzed ? 'Reanálizar' : 'Analizar digitalmente'}</>
+                }
+              </Button>
+            </div>
+
+            {analyzed && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                {flaws.length > 0 && (
+                  <div>
+                    <p style={{ fontSize: 11, color: 'var(--danger)', fontWeight: 700, marginBottom: 5 }}>⚠ Fallos detectados</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {flaws.map(f => <Badge key={f} variant="danger" style={{ fontSize: 10 }}>{f}</Badge>)}
+                    </div>
+                  </div>
+                )}
+                {saas.length > 0 && (
+                  <div>
+                    <p style={{ fontSize: 11, color: 'var(--success)', fontWeight: 700, marginBottom: 5 }}>🚀 Oportunidades SaaS</p>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4 }}>
+                      {saas.map(s => <Badge key={s} variant="success" style={{ fontSize: 10 }}>{s}</Badge>)}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
           </div>
         </div>
 
