@@ -78,12 +78,14 @@ export default function App() {
 
   // ── Load on mount ──────────────────────────────────────────────
   useEffect(() => {
-    loadData()
-      .then(d => {
+    Promise.all([loadData(), loadCustomers(), loadProjects()])
+      .then(([d, c, p]) => {
         setLeads(   d.leads    || [])
         setContacts(d.contacts || {})
         setNotes(   d.notes    || {})
         setStatuses(d.statuses || {})
+        setCustomers(c || [])
+        setProjects(p || [])
       })
       .catch(err => console.error('Error cargando datos:', err))
 
