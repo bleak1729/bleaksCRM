@@ -59,23 +59,25 @@ const fmtEur = (v: number) =>
 const calcSubtotal = (items: LineItem[]) =>
   items.reduce((s, it) => s + (it.quantity || 0) * (it.unit_price || 0), 0)
 
+// Si la factura tiene amount pero no line_items, crea una fila con ese importe
+const initItems = (inv: Partial<Invoice>): LineItem[] => {
+  if (inv.line_items && inv.line_items.length > 0) return inv.line_items
+  if (inv.amount && inv.amount > 0)
+    return [{ description: inv.description || 'Servicios profesionales', quantity: 1, unit_price: inv.amount }]
+  return [{ ...EMPTY_ITEM }]
+}
+
 /* ── Component ───────────────────────────────────────────────────── */
 export default function InvoiceModal({ invoice, onSave, onClose }: Props) {
   const isNew = !invoice.id
 
   const [form,   setForm]   = useState<Invoice>(() => ({
-    ...DEFAULT,
-    ...invoice,
-    line_items: invoice.line_items?.length ? invoice.line_items : [{ ...EMPTY_ITEM }],
+    ...DEFAULT, ...invoice, line_items: initItems(invoice),
   }) as Invoice)
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    setForm({
-      ...DEFAULT,
-      ...invoice,
-      line_items: invoice.line_items?.length ? invoice.line_items : [{ ...EMPTY_ITEM }],
-    } as Invoice)
+    setForm({ ...DEFAULT, ...invoice, line_items: initItems(invoice) } as Invoice)
     setErrors({})
   }, [invoice])
 
