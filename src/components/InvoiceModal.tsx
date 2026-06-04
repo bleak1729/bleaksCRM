@@ -35,10 +35,10 @@ interface Props {
 
 /* ── Constants ───────────────────────────────────────────────────── */
 const STATUS_OPTIONS = [
-  { value: 'cotizacion', label: 'Cotización', color: 'var(--warning)' },
-  { value: 'enviada',    label: 'Enviada',    color: 'var(--ac)'      },
-  { value: 'pagada',     label: 'Pagada',     color: 'var(--success)' },
-  { value: 'vencida',    label: 'Vencida',    color: 'var(--danger)'  },
+  { value: 'borrador', label: 'Cotización', color: 'var(--warning)' },
+  { value: 'enviada',  label: 'Enviada',    color: 'var(--ac)'      },
+  { value: 'pagada',   label: 'Pagada',     color: 'var(--success)' },
+  { value: 'vencida',  label: 'Vencida',    color: 'var(--danger)'  },
 ]
 
 const today = new Date().toISOString().slice(0, 10)
