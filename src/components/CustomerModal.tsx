@@ -65,7 +65,7 @@ const PROJECT_STATUS_LABELS: Record<string, string> = {
 }
 
 const INVOICE_STATUS_COLORS: Record<string, string> = {
-  borrador: 'var(--warning)', enviada: 'var(--ac)', pagada: 'var(--success)', vencida: 'var(--danger)',
+  cotizacion: 'var(--warning)', enviada: 'var(--ac)', pagada: 'var(--success)', vencida: 'var(--danger)',
 }
 
 const DOC_TYPE_LABELS: Record<string, string> = {
