@@ -190,9 +190,10 @@ export function Sidebar({
   const [isOpen,      setIsOpen]      = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expanded,    setExpanded]    = useState<Record<string, boolean>>({
-    leads:   true,
+    leads:    true,
+    clientes: true,
     acciones: true,
-    config:  false,
+    config:   false,
   });
   const importRef = useRef<HTMLInputElement>(null);
 
