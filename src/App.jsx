@@ -334,7 +334,22 @@ export default function App() {
             leads={leads}
             statuses={statuses}
             contacts={contacts}
+            customers={customers}
             onNavigate={setActiveNav}
+          />
+        ) : activeNav === 'clientes' ? (
+          /* ── CLIENTES ────────────────────────────────────────── */
+          <CustomerList
+            customers={customers}
+            projects={projects}
+            onSave={handleSaveCustomer}
+            onDelete={handleDeleteCustomer}
+            onSaveProject={handleSaveProject}
+            onDeleteProject={handleDeleteProject}
+            onViewLead={leadId => {
+              const lead = leads.find(l => l.id === leadId)
+              if (lead) { setEditModalLead(lead); setActiveNav('busqueda') }
+            }}
           />
         ) : (
           /* ── BÚSQUEDA + TABLA ────────────────────────────────── */
