@@ -783,19 +783,28 @@ app.get('/api/invoices/:id/pdf', requireAuth, async (req, res) => {
 
   // ── Tabla de conceptos ──
   const tableY = 230;
-  doc.rect(50, tableY, 495, 28).fill(acColor);
-  doc.fontSize(10).fillColor('#fff').font('Helvetica-Bold')
-    .text('Descripción', 60, tableY + 9)
-    .text('Importe', 460, tableY + 9, { align: 'right', width: 75 });
+  doc.rect(50, tableY, 495, 24).fill(acColor);
+  doc.fontSize(9).fillColor('#fff').font('Helvetica-Bold')
+    .text('Descripción', 60, tableY + 8)
+    .text('Cant.', 320, tableY + 8, { align: 'right', width: 40 })
+    .text('P. Unitario', 370, tableY + 8, { align: 'right', width: 80 })
+    .text('Total', 460, tableY + 8, { align: 'right', width: 75 });
 
-  const rowY = tableY + 28;
-  doc.rect(50, rowY, 495, 32).fill('#f9fafb');
-  doc.fontSize(10).fillColor('#111827').font('Helvetica')
-    .text(inv.description || 'Servicios profesionales', 60, rowY + 10, { width: 360 })
-    .text(fmtEur(subtotal), 460, rowY + 10, { align: 'right', width: 75 });
+  const renderItems = items.length ? items : [{ description: inv.description || 'Servicios profesionales', quantity: 1, unit_price: subtotal }];
+  let curY = tableY + 24;
+  renderItems.forEach((it, i) => {
+    const lineTotal = (Number(it.quantity) || 0) * (Number(it.unit_price) || 0);
+    if (i % 2 === 0) doc.rect(50, curY, 495, 24).fill('#f9fafb');
+    doc.fontSize(9).fillColor('#111827').font('Helvetica')
+      .text(it.description || '—', 60, curY + 8, { width: 250 })
+      .text(String(it.quantity ?? 1), 320, curY + 8, { align: 'right', width: 40 })
+      .text(fmtEur(Number(it.unit_price) || 0), 370, curY + 8, { align: 'right', width: 80 })
+      .text(fmtEur(lineTotal), 460, curY + 8, { align: 'right', width: 75 });
+    curY += 24;
+  });
 
   // ── Totales ──
-  const totY = rowY + 60;
+  const totY = curY + 16;
   doc.moveTo(350, totY).lineTo(545, totY).strokeColor('#e5e7eb').lineWidth(1).stroke();
 
   doc.fontSize(10).fillColor('#374151').font('Helvetica')
