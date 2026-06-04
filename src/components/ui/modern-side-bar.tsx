@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Upload, Sun, Moon,
   FileJson, TableProperties, ChevronLeft, ChevronRight,
   Menu, X, LogOut, Wifi, WifiOff, Search, Settings,
-  ChevronDown, Zap,
+  ChevronDown, Zap, Building2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
