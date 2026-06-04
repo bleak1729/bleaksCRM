@@ -696,6 +696,11 @@ app.get('/api/invoices', requireAuth, async (req, res) => {
 app.post('/api/invoices', requireAuth, async (req, res) => {
   if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
   const { id, created_at, updated_at, ...fields } = req.body;
+  // Auto-generar número de factura: FAC-YYYY-NNN
+  const year = new Date().getFullYear();
+  const { count } = await supabase.from('invoices').select('*', { count: 'exact', head: true });
+  const num = ((count || 0) + 1).toString().padStart(3, '0');
+  fields.invoice_number = `FAC-${year}-${num}`;
   const { data, error } = await supabase.from('invoices').insert(fields).select().single();
   if (error) return res.status(500).json({ error: error.message });
   return res.status(201).json(data);
