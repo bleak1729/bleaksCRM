@@ -176,56 +176,99 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
           <div style={{ display: 'flex', gap: 6, marginLeft: 8 }}>
 
             {/* ── Split button Exportar ─────────────────────────── */}
-            {(onExportCSV || onExportJSON) && (
-              <div ref={exportRef} style={{ position: 'relative', display: 'inline-flex' }}>
-                {/* Acción principal: exportar CSV */}
-                <button
-                  onClick={() => { onExportCSV?.(); setExportOpen(false) }}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    padding: '0 10px', height: 32,
-                    fontFamily: 'var(--fd)', fontSize: '13px', fontWeight: 500,
-                    background: 'var(--bg2)', color: 'var(--txt2)',
-                    border: '1px solid var(--bor2)', borderRight: 'none',
-                    borderRadius: 'var(--r2) 0 0 var(--r2)',
-                    cursor: 'pointer', transition: 'background .15s', whiteSpace: 'nowrap',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg2)')}
-                >
-                  <TableProperties size={13}/> Exportar
-                </button>
+            <div ref={exportRef} style={{ position: 'relative', display: 'inline-flex' }}>
+              {/* Acción principal: exportar CSV */}
+              <button
+                onClick={() => { onExportCSV?.(); setExportOpen(false) }}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  padding: '0 10px', height: 32,
+                  fontFamily: 'var(--fd)', fontSize: '13px', fontWeight: 500,
+                  background: 'var(--bg2)', color: 'var(--txt2)',
+                  border: '1px solid var(--bor2)', borderRight: 'none',
+                  borderRadius: 'var(--r2) 0 0 var(--r2)',
+                  cursor: 'pointer', transition: 'background .15s', whiteSpace: 'nowrap',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg2)')}
+              >
+                <TableProperties size={13}/> Exportar
+              </button>
 
-                {/* Flecha dropdown */}
-                <button
-                  onClick={() => setExportOpen(v => !v)}
-                  aria-label="Más opciones de exportación"
-                  style={{
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                    width: 26, height: 32,
-                    background: exportOpen ? 'var(--bg3)' : 'var(--bg2)',
-                    color: 'var(--txt2)',
-                    border: '1px solid var(--bor2)',
-                    borderRadius: '0 var(--r2) var(--r2) 0',
-                    cursor: 'pointer', transition: 'background .15s',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = exportOpen ? 'var(--bg3)' : 'var(--bg2)')}
-                >
-                  <ChevronDown size={12} style={{ transition: 'transform .15s', transform: exportOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}/>
-                </button>
+              {/* Flecha dropdown */}
+              <button
+                onClick={() => setExportOpen(v => !v)}
+                aria-label="Más opciones"
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  width: 26, height: 32,
+                  background: exportOpen ? 'var(--bg3)' : 'var(--bg2)',
+                  color: 'var(--txt2)',
+                  border: '1px solid var(--bor2)',
+                  borderRadius: '0 var(--r2) var(--r2) 0',
+                  cursor: 'pointer', transition: 'background .15s',
+                }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
+                onMouseLeave={e => (e.currentTarget.style.background = exportOpen ? 'var(--bg3)' : 'var(--bg2)')}
+              >
+                <ChevronDown size={12} style={{ transition: 'transform .15s', transform: exportOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}/>
+              </button>
 
-                {/* Menú desplegable */}
-                {exportOpen && (
-                  <div style={{
-                    position: 'absolute', top: 'calc(100% + 6px)', left: 0,
-                    background: 'var(--bg2)', border: '1px solid var(--bor2)',
-                    borderRadius: 'var(--r2)', padding: 4, minWidth: 168,
-                    zIndex: 200, boxShadow: '0 4px 16px rgba(0,0,0,.12)',
-                  }}>
-                    {onExportCSV && (
+              {/* Menú desplegable */}
+              {exportOpen && (
+                <div style={{
+                  position: 'absolute', top: 'calc(100% + 6px)', left: 0,
+                  background: 'var(--bg2)', border: '1px solid var(--bor2)',
+                  borderRadius: 'var(--r2)', padding: 4, minWidth: 178,
+                  zIndex: 200, boxShadow: '0 4px 16px rgba(0,0,0,.12)',
+                }}>
+                  {onExportCSV && (
+                    <button
+                      onClick={() => { onExportCSV(); setExportOpen(false) }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        width: '100%', padding: '7px 10px',
+                        fontFamily: 'var(--fb)', fontSize: '13px',
+                        color: 'var(--txt)', background: 'transparent',
+                        border: 'none', borderRadius: 'var(--r)', cursor: 'pointer',
+                        textAlign: 'left', transition: 'background .12s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <TableProperties size={13} style={{ color: 'var(--txt3)', flexShrink: 0 }}/>
+                      <span>
+                        <span style={{ display: 'block', fontWeight: 500 }}>Exportar CSV</span>
+                        <span style={{ display: 'block', fontSize: '11px', color: 'var(--txt3)' }}>Tabla de leads</span>
+                      </span>
+                    </button>
+                  )}
+                  {onExportJSON && (
+                    <button
+                      onClick={() => { onExportJSON(); setExportOpen(false) }}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 8,
+                        width: '100%', padding: '7px 10px',
+                        fontFamily: 'var(--fb)', fontSize: '13px',
+                        color: 'var(--txt)', background: 'transparent',
+                        border: 'none', borderRadius: 'var(--r)', cursor: 'pointer',
+                        textAlign: 'left', transition: 'background .12s',
+                      }}
+                      onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
+                      onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                    >
+                      <FileJson size={13} style={{ color: 'var(--txt3)', flexShrink: 0 }}/>
+                      <span>
+                        <span style={{ display: 'block', fontWeight: 500 }}>Exportar JSON</span>
+                        <span style={{ display: 'block', fontSize: '11px', color: 'var(--txt3)' }}>Copia de seguridad</span>
+                      </span>
+                    </button>
+                  )}
+                  {onImport && (
+                    <>
+                      <div style={{ height: 1, background: 'var(--bor2)', margin: '4px 0' }}/>
                       <button
-                        onClick={() => { onExportCSV(); setExportOpen(false) }}
+                        onClick={() => { setExportOpen(false); importRef.current?.click() }}
                         style={{
                           display: 'flex', alignItems: 'center', gap: 8,
                           width: '100%', padding: '7px 10px',
@@ -237,59 +280,20 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
                         onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
                         onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                       >
-                        <TableProperties size={13} style={{ color: 'var(--txt3)', flexShrink: 0 }}/>
+                        <Upload size={13} style={{ color: 'var(--txt3)', flexShrink: 0 }}/>
                         <span>
-                          <span style={{ display: 'block', fontWeight: 500 }}>Exportar CSV</span>
-                          <span style={{ display: 'block', fontSize: '11px', color: 'var(--txt3)' }}>Tabla de leads</span>
+                          <span style={{ display: 'block', fontWeight: 500 }}>Importar JSON</span>
+                          <span style={{ display: 'block', fontSize: '11px', color: 'var(--txt3)' }}>Restaurar datos</span>
                         </span>
                       </button>
-                    )}
-                    {onExportJSON && (
-                      <button
-                        onClick={() => { onExportJSON(); setExportOpen(false) }}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 8,
-                          width: '100%', padding: '7px 10px',
-                          fontFamily: 'var(--fb)', fontSize: '13px',
-                          color: 'var(--txt)', background: 'transparent',
-                          border: 'none', borderRadius: 'var(--r)', cursor: 'pointer',
-                          textAlign: 'left', transition: 'background .12s',
-                        }}
-                        onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
-                        onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                      >
-                        <FileJson size={13} style={{ color: 'var(--txt3)', flexShrink: 0 }}/>
-                        <span>
-                          <span style={{ display: 'block', fontWeight: 500 }}>Exportar JSON</span>
-                          <span style={{ display: 'block', fontSize: '11px', color: 'var(--txt3)' }}>Copia de seguridad</span>
-                        </span>
-                      </button>
-                    )}
-                  </div>
-                )}
-              </div>
-            )}
+                    </>
+                  )}
+                </div>
+              )}
+            </div>
 
-            {/* ── Botón Importar ───────────────────────────────── */}
             {onImport && (
-              <>
-                <button
-                  onClick={() => importRef.current?.click()}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 5,
-                    padding: '0 10px', height: 32,
-                    fontFamily: 'var(--fd)', fontSize: '13px', fontWeight: 500,
-                    background: 'var(--bg2)', color: 'var(--txt2)',
-                    border: '1px solid var(--bor2)', borderRadius: 'var(--r2)',
-                    cursor: 'pointer', transition: 'background .15s', whiteSpace: 'nowrap',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg2)')}
-                >
-                  <Upload size={13}/> Importar
-                </button>
-                <input ref={importRef} type="file" accept=".json" className="hidden" onChange={onImport}/>
-              </>
+              <input ref={importRef} type="file" accept=".json" className="hidden" onChange={onImport}/>
             )}
 
           </div>
