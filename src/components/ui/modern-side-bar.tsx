@@ -210,11 +210,8 @@ export function Sidebar({
   };
 
   const handleAction = (id: string) => {
-    if (id === 'save')   onSave();
-    if (id === 'csv')    onExportCSV();
-    if (id === 'json')   onExportJSON();
-    if (id === 'import') importRef.current?.click();
-    if (id === 'theme')  onToggleTheme();
+    if (id === 'save')  onSave();
+    if (id === 'theme') onToggleTheme();
   };
 
   const serverOk     = health?.ok;
