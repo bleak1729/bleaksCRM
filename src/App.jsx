@@ -10,7 +10,10 @@ import NewLeadModal      from './components/NewLeadModal.tsx'
 import CustomerList      from './components/CustomerList.tsx'
 import { getHealth, loadData, saveData, startSearch, getToken, clearToken,
          loadCustomers, createCustomer, updateCustomer, deleteCustomer,
-         loadProjects, createProject, updateProject, deleteProject } from './api.js'
+         loadProjects, createProject, updateProject, deleteProject,
+         loadContacts, createContact, updateContact, deleteContact,
+         loadInvoices, createInvoice, updateInvoice, deleteInvoice,
+         loadDocuments, createDocument, updateDocument, deleteDocument } from './api.js'
 
 
 // Inicializa el tema desde localStorage (evita flash antes del primer render)
