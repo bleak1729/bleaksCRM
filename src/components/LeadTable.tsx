@@ -64,15 +64,18 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
   const [sortCol,     setSortCol]     = useState<SortCol>('name')
   const [sortDir,     setSortDir]     = useState<SortDir>('asc')
   const [confirmId,   setConfirmId]   = useState<string | null>(null)
-  const [exportOpen,  setExportOpen]  = useState(false)
-  const importRef   = useRef<HTMLInputElement>(null)
-  const exportRef   = useRef<HTMLDivElement>(null)
+  const [exportOpen,   setExportOpen]   = useState(false)
+  const [pipelineOpen, setPipelineOpen] = useState(false)
+  const importRef    = useRef<HTMLInputElement>(null)
+  const exportRef    = useRef<HTMLDivElement>(null)
+  const pipelineRef  = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     const handler = (e: MouseEvent) => {
-      if (exportRef.current && !exportRef.current.contains(e.target as Node)) {
+      if (exportRef.current && !exportRef.current.contains(e.target as Node))
         setExportOpen(false)
-      }
+      if (pipelineRef.current && !pipelineRef.current.contains(e.target as Node))
+        setPipelineOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
