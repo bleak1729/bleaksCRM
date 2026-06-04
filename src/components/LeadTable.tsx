@@ -59,11 +59,12 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
     : <ArrowDown size={12} className="ml-1 inline" style={{ color: 'var(--ac)' }}/>
 }
 
-export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead, onEdit, onDelete }: Props) {
+export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead, onEdit, onDelete, onExportCSV, onExportJSON, onImport }: Props) {
   const [search,      setSearch]      = useState('')
   const [sortCol,     setSortCol]     = useState<SortCol>('name')
   const [sortDir,     setSortDir]     = useState<SortDir>('asc')
   const [confirmId,   setConfirmId]   = useState<string | null>(null)
+  const importRef = useRef<HTMLInputElement>(null)
 
   const confirmLead = confirmId ? leads.find(l => l.id === confirmId) : null
 
