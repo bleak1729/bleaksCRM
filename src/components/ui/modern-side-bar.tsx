@@ -19,9 +19,6 @@ interface SidebarProps {
   onToggleTheme: () => void;
   leads:         Lead[];
   onSave:        () => void;
-  onExportCSV:   () => void;
-  onExportJSON:  () => void;
-  onImport:      (e: React.ChangeEvent<HTMLInputElement>) => void;
   activeNav:     string;
   onNavChange:   (id: string) => void;
   username?:     string;
