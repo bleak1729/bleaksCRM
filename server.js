@@ -302,6 +302,22 @@ function mapPlaces(places, sector) {
     });
 }
 
+// ── Tipos de lugar por sector (para Nearby Search por proximidad) ─────────────
+// Nearby Search con DISTANCE devuelve negocios poco visibles que Text Search omite
+const SECTOR_TYPES = {
+  'Salud':        ['doctor','dentist','physiotherapist','pharmacy','hospital','medical_clinic'],
+  'Veterinaria':  ['veterinary_care','pet_store','pet_supplies_store'],
+  'Belleza':      ['hair_care','beauty_salon','nail_salon','spa','barber_shop','massage_therapist'],
+  'Hosteleria':   ['restaurant','bar','cafe','bakery','meal_takeaway','meal_delivery','food'],
+  'Retail':       ['clothing_store','shoe_store','book_store','gift_shop','boutique','jewelry_store'],
+  'Servicios':    ['plumber','electrician','moving_company','laundry','locksmith','painter','roofing_contractor'],
+  'Mecanica':     ['car_repair','auto_parts_store','car_wash','tire_shop'],
+  'Optica':       ['optician','eyeglass_store'],
+  'Inmobiliaria': ['real_estate_agency'],
+  'Academia':     ['school','driving_school','tutoring_center','language_school','music_school'],
+  '':             ['store','restaurant','health','finance','real_estate_agency','school'],
+};
+
 // ── BÚSQUEDA — Google Places API (New) ───────────────────────────────────────
 const PLACES_FIELD_MASK = [
   'places.id', 'places.displayName', 'places.formattedAddress',
@@ -386,12 +402,50 @@ app.post('/api/search', requireAuth, async (req, res) => {
       return places;
     };
 
-    // 3. Lanzar las 3 queries en paralelo
-    const results = await Promise.all(queries.map(fetchQuery));
+    // 3. Lanzar las 3 Text Search queries en paralelo
+    const textResults = await Promise.all(queries.map(fetchQuery));
 
-    // 4. Combinar y deduplicar por place id
-    const seen     = new Set();
-    const allPlaces = results.flat().filter(p => {
+    // 4. Nearby Search por PROXIMIDAD (rankPreference: DISTANCE)
+    //    Devuelve negocios con poca visibilidad que Text Search omite por baja relevancia
+    let nearbyPlaces = [];
+    const nearbyTypes = SECTOR_TYPES[sector] || SECTOR_TYPES[''];
+    if (locationBias) {
+      try {
+        // Lanzar 2 rondas de Nearby Search con subconjuntos de tipos
+        const CHUNK = 5; // máx tipos por petición para mayor cobertura
+        const chunks = [];
+        for (let i = 0; i < nearbyTypes.length; i += CHUNK)
+          chunks.push(nearbyTypes.slice(i, i + CHUNK));
+
+        const nearbyResults = await Promise.all(chunks.map(async (types) => {
+          const r = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+            method:  'POST',
+            headers: {
+              'Content-Type':     'application/json',
+              'X-Goog-Api-Key':   GOOGLE_API_KEY,
+              'X-Goog-FieldMask': PLACES_FIELD_MASK,
+            },
+            body: JSON.stringify({
+              includedTypes:      types,
+              maxResultCount:     20,
+              rankPreference:     'DISTANCE', // ← clave: por proximidad, no por popularidad
+              locationRestriction: {
+                circle: locationBias.circle, // Nearby Search sí acepta circle en locationRestriction
+              },
+            }),
+          });
+          if (!r.ok) return [];
+          const d = await r.json();
+          return d.places || [];
+        }));
+
+        nearbyPlaces = nearbyResults.flat();
+      } catch (_) { /* silencioso si falla nearby */ }
+    }
+
+    // 5. Combinar Text Search + Nearby Search y deduplicar por place id
+    const seen      = new Set();
+    const allPlaces = [...textResults.flat(), ...nearbyPlaces].filter(p => {
       if (seen.has(p.id)) return false;
       seen.add(p.id);
       return true;
