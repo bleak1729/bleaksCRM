@@ -1,0 +1,24 @@
+# Dependencias
+node_modules/
+
+# Variables de entorno (contienen API keys — nunca subir)
+.env
+.env.local
+.env.*.local
+
+# Base de datos local (fallback)
+data.json
+
+# Build
+dist/
+
+# Logs
+*.log
+npm-debug.log*
+
+# macOS
+.DS_Store
+
+# IDEs
+.vscode/
+.idea/
