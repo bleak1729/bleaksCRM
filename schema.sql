@@ -64,6 +64,63 @@ CREATE TABLE IF NOT EXISTS users (
 
 ALTER TABLE users DISABLE ROW LEVEL SECURITY;
 
+-- ── Tabla de clientes (leads convertidos) ────────────────────────
+CREATE TABLE IF NOT EXISTS customers (
+  id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  lead_id        TEXT        UNIQUE REFERENCES leads(id) ON DELETE SET NULL,
+  name           TEXT        NOT NULL DEFAULT '',
+  sector         TEXT        NOT NULL DEFAULT '',
+  contact_name   TEXT        NOT NULL DEFAULT '',
+  email          TEXT        NOT NULL DEFAULT '',
+  phone          TEXT        NOT NULL DEFAULT '',
+  address        TEXT        NOT NULL DEFAULT '',
+  website        TEXT        NOT NULL DEFAULT '',
+  status         TEXT        NOT NULL DEFAULT 'activo'
+                               CHECK (status IN ('activo', 'pausado', 'cancelado')),
+  contract_start DATE,
+  contract_end   DATE,
+  monthly_value  NUMERIC     NOT NULL DEFAULT 0,
+  services       TEXT[]      NOT NULL DEFAULT '{}',
+  notes          TEXT        NOT NULL DEFAULT '',
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_customers_lead_id ON customers(lead_id);
+CREATE INDEX IF NOT EXISTS idx_customers_status  ON customers(status);
+
+DROP TRIGGER IF EXISTS customers_updated_at ON customers;
+CREATE TRIGGER customers_updated_at
+  BEFORE UPDATE ON customers
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+ALTER TABLE customers DISABLE ROW LEVEL SECURITY;
+
+-- ── Tabla de proyectos (vinculados a clientes) ────────────────────
+CREATE TABLE IF NOT EXISTS projects (
+  id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id UUID        NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  name        TEXT        NOT NULL DEFAULT '',
+  description TEXT        NOT NULL DEFAULT '',
+  status      TEXT        NOT NULL DEFAULT 'activo'
+                            CHECK (status IN ('activo', 'en_pausa', 'completado', 'cancelado')),
+  start_date  DATE,
+  end_date    DATE,
+  value       NUMERIC     NOT NULL DEFAULT 0,
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+CREATE INDEX IF NOT EXISTS idx_projects_customer_id ON projects(customer_id);
+CREATE INDEX IF NOT EXISTS idx_projects_status      ON projects(status);
+
+DROP TRIGGER IF EXISTS projects_updated_at ON projects;
+CREATE TRIGGER projects_updated_at
+  BEFORE UPDATE ON projects
+  FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+
+ALTER TABLE projects DISABLE ROW LEVEL SECURITY;
+
 -- ── Vista útil para análisis ──────────────────────────────────────
 CREATE OR REPLACE VIEW leads_summary AS
 SELECT
