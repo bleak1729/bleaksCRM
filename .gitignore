@@ -22,3 +22,6 @@ npm-debug.log*
 # IDEs
 .vscode/
 .idea/
+
+# Claude Code (interno)
+.claude/
