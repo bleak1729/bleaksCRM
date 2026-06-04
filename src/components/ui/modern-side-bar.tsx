@@ -423,6 +423,9 @@ export function Sidebar({
                 <LogOut size={13}/>
                 Cerrar sesión
               </button>
+              <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '11px', color: 'var(--txt3)', fontFamily: 'var(--fb)', letterSpacing: '0.05em' }}>
+                v{versionData.version}
+              </div>
             </>
           ) : (
             <div className="flex justify-center">
