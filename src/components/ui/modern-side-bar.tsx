@@ -1,13 +1,14 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  LayoutDashboard, Users, Save, Upload, Sun, Moon,
+  LayoutDashboard, Users, Upload, Sun, Moon,
   FileJson, TableProperties, ChevronLeft, ChevronRight,
   Menu, X, LogOut, Wifi, WifiOff, Search, Settings,
   ChevronDown, Zap,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
+import versionData from '../../version.json';
 
 /* ── Tipos ────────────────────────────────────────────────────── */
 interface Lead { id: string; [key: string]: unknown }
