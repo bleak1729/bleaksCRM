@@ -94,9 +94,12 @@ export default function App() {
       })
       .catch(err => console.error('Error cargando datos:', err))
 
-    // Customers/Projects: independientes — si la tabla aún no existe en Supabase no rompen la app
+    // Módulo clientes: independientes — si la tabla aún no existe en Supabase no rompen la app
     loadCustomers().then(c => setCustomers(c || [])).catch(() => {})
-    loadProjects().then(p => setProjects(p  || [])).catch(() => {})
+    loadProjects().then(p => setProjects(p || [])).catch(() => {})
+    loadContacts().then(c => setCustomerContacts(c || [])).catch(() => {})
+    loadInvoices().then(i => setInvoices(i || [])).catch(() => {})
+    loadDocuments().then(d => setDocuments(d || [])).catch(() => {})
 
     getHealth()
       .then(setHealth)
