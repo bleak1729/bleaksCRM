@@ -426,7 +426,7 @@ export default function CustomerModal({
                                 {new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(total)}
                               </span>
                               <span style={{ fontSize: 10, padding: '2px 7px', borderRadius: 99, background: INVOICE_STATUS_COLORS[inv.status] + '22', color: INVOICE_STATUS_COLORS[inv.status], fontWeight: 700, border: `1px solid ${INVOICE_STATUS_COLORS[inv.status]}44` }}>
-                                {inv.status === 'borrador' ? 'Cotización' : inv.status}
+                                {inv.status === 'cotizacion' ? 'Cotización' : inv.status}
                               </span>
                               <button onClick={() => downloadInvoicePdf(inv.id!)} title="Descargar PDF"
                                 style={{ background: 'var(--bg3)', border: '1px solid var(--bor2)', borderRadius: 'var(--r2)', padding: '4px 7px', cursor: 'pointer', display: 'flex', alignItems: 'center', color: 'var(--txt2)' }}>
