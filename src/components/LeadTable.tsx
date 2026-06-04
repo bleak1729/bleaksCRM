@@ -17,13 +17,16 @@ interface Lead {
   flaws: string[]; saas: string[]; source: string; [k: string]: unknown
 }
 interface Props {
-  leads:      Lead[]
-  statuses:   Record<string, string>
-  filter:     string
-  onFilter:   (v: string) => void
-  onNewLead?: () => void
-  onEdit:     (lead: Lead) => void
-  onDelete?:  (id: string) => void
+  leads:         Lead[]
+  statuses:      Record<string, string>
+  filter:        string
+  onFilter:      (v: string) => void
+  onNewLead?:    () => void
+  onEdit:        (lead: Lead) => void
+  onDelete?:     (id: string) => void
+  onExportCSV?:  () => void
+  onExportJSON?: () => void
+  onImport?:     (e: React.ChangeEvent<HTMLInputElement>) => void
 }
 
 const FILTER_OPTIONS = [
