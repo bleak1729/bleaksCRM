@@ -534,6 +534,77 @@ app.post('/api/analyze', requireAuth, async (req, res) => {
   res.json({ flaws: [...new Set(flaws)].slice(0, 5), saas });
 });
 
+// ── CUSTOMERS ────────────────────────────────────────────────────────────────
+
+app.get('/api/customers', requireAuth, async (_req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { data, error } = await supabase
+    .from('customers').select('*').order('created_at', { ascending: false });
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data || []);
+});
+
+app.post('/api/customers', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { id, created_at, updated_at, ...fields } = req.body;
+  const { data, error } = await supabase
+    .from('customers').insert(fields).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(201).json(data);
+});
+
+app.put('/api/customers/:id', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { id, created_at, updated_at, ...fields } = req.body;
+  const { data, error } = await supabase
+    .from('customers').update(fields).eq('id', req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data);
+});
+
+app.delete('/api/customers/:id', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { error } = await supabase.from('customers').delete().eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json({ ok: true });
+});
+
+// ── PROJECTS ──────────────────────────────────────────────────────────────────
+
+app.get('/api/projects', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  let q = supabase.from('projects').select('*').order('created_at', { ascending: false });
+  if (req.query.customer_id) q = q.eq('customer_id', req.query.customer_id);
+  const { data, error } = await q;
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data || []);
+});
+
+app.post('/api/projects', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { id, created_at, updated_at, ...fields } = req.body;
+  const { data, error } = await supabase
+    .from('projects').insert(fields).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(201).json(data);
+});
+
+app.put('/api/projects/:id', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { id, created_at, updated_at, ...fields } = req.body;
+  const { data, error } = await supabase
+    .from('projects').update(fields).eq('id', req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data);
+});
+
+app.delete('/api/projects/:id', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { error } = await supabase.from('projects').delete().eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json({ ok: true });
+});
+
 // ── EXPORT para Vercel serverless / START para desarrollo local ───────────────
 module.exports = app;
 
