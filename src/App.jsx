@@ -224,6 +224,75 @@ export default function App() {
     } catch { showToast('Error al eliminar proyecto') }
   }, [showToast])
 
+  // ── Contact handlers ───────────────────────────────────────────
+  const handleSaveContact = useCallback(async (contact) => {
+    try {
+      if (contact.id) {
+        const updated = await updateContact(contact.id, contact)
+        setCustomerContacts(prev => prev.map(c => c.id === updated.id ? updated : c))
+        showToast('Contacto actualizado')
+      } else {
+        const created = await createContact(contact)
+        setCustomerContacts(prev => [created, ...prev])
+        showToast('Contacto añadido')
+      }
+    } catch { showToast('Error al guardar contacto') }
+  }, [showToast])
+
+  const handleDeleteContact = useCallback(async (id) => {
+    try {
+      await deleteContact(id)
+      setCustomerContacts(prev => prev.filter(c => c.id !== id))
+      showToast('Contacto eliminado')
+    } catch { showToast('Error al eliminar contacto') }
+  }, [showToast])
+
+  // ── Invoice handlers ───────────────────────────────────────────
+  const handleSaveInvoice = useCallback(async (invoice) => {
+    try {
+      if (invoice.id) {
+        const updated = await updateInvoice(invoice.id, invoice)
+        setInvoices(prev => prev.map(i => i.id === updated.id ? updated : i))
+        showToast('Factura actualizada')
+      } else {
+        const created = await createInvoice(invoice)
+        setInvoices(prev => [created, ...prev])
+        showToast('Factura creada')
+      }
+    } catch { showToast('Error al guardar factura') }
+  }, [showToast])
+
+  const handleDeleteInvoice = useCallback(async (id) => {
+    try {
+      await deleteInvoice(id)
+      setInvoices(prev => prev.filter(i => i.id !== id))
+      showToast('Factura eliminada')
+    } catch { showToast('Error al eliminar factura') }
+  }, [showToast])
+
+  // ── Document handlers ──────────────────────────────────────────
+  const handleSaveDocument = useCallback(async (document) => {
+    try {
+      if (document.id) {
+        const updated = await updateDocument(document.id, document)
+        setDocuments(prev => prev.map(d => d.id === updated.id ? updated : d))
+        showToast('Documento actualizado')
+      } else {
+        const created = await createDocument(document)
+        setDocuments(prev => [created, ...prev])
+        showToast('Documento añadido')
+      }
+    } catch { showToast('Error al guardar documento') }
+  }, [showToast])
+
+  const handleDeleteDocument = useCallback(async (id) => {
+    try {
+      await deleteDocument(id)
+      setDocuments(prev => prev.filter(d => d.id !== id))
+      showToast('Documento eliminado')
+    } catch { showToast('Error al eliminar documento') }
+  }, [showToast])
+
   // ── Google Maps search ────────────────────────────────────────
   const runSearch = useCallback(async ({ city, radius, sector }) => {
     setSearch({ loading: true, status: 'Buscando en Google Maps...', color: 'var(--txt2)' })
