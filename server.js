@@ -534,16 +534,20 @@ app.post('/api/analyze', requireAuth, async (req, res) => {
   res.json({ flaws: [...new Set(flaws)].slice(0, 5), saas });
 });
 
-// ── START ─────────────────────────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log('\n  ╔══════════════════════════════════════════╗');
-  console.log("  ║   Bleak's Solutions CRM — v7.0.0        ║");
-  console.log('  ╚══════════════════════════════════════════╝\n');
-  console.log(`  URL:  http://localhost:${PORT}\n`);
-  if (GOOGLE_API_KEY) {
-    console.log('  Google Maps API:  ✓ OK\n');
-  } else {
-    console.log('  Google Maps API:  ✗ NO CONFIGURADA');
-    console.log('  Añade GOOGLE_MAPS_API_KEY=AIza... en el fichero .env\n');
-  }
-});
+// ── EXPORT para Vercel serverless / START para desarrollo local ───────────────
+module.exports = app;
+
+if (require.main === module) {
+  app.listen(PORT, () => {
+    console.log('\n  ╔══════════════════════════════════════════╗');
+    console.log("  ║   Bleak's Solutions CRM — v7.0.0        ║");
+    console.log('  ╚══════════════════════════════════════════╝\n');
+    console.log(`  URL:  http://localhost:${PORT}\n`);
+    if (GOOGLE_API_KEY) {
+      console.log('  Google Maps API:  ✓ OK\n');
+    } else {
+      console.log('  Google Maps API:  ✗ NO CONFIGURADA');
+      console.log('  Añade GOOGLE_MAPS_API_KEY=AIza... en el fichero .env\n');
+    }
+  });
+}
