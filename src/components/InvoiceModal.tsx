@@ -47,7 +47,7 @@ const EMPTY_ITEM: LineItem = { description: '', quantity: 1, unit_price: 0 }
 
 const DEFAULT: Omit<Invoice, 'customer_id'> = {
   invoice_number: '', issue_date: today, due_date: null,
-  amount: 0, tax_pct: 21, status: 'borrador',
+  amount: 0, tax_pct: 21, status: 'cotizacion',
   line_items: [{ ...EMPTY_ITEM }],
   description: '', notes: '',
 }
