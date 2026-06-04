@@ -87,7 +87,7 @@ export const deleteProject = id =>
 
 // ── Customer Contacts ─────────────────────────────────────────────
 export const loadContacts = (customerId) =>
-  fetch(`/api/customer-contacts?customer_id=${customerId}`, { headers: authHeaders() })
+  fetch(`/api/customer-contacts${customerId ? `?customer_id=${customerId}` : ''}`, { headers: authHeaders() })
     .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
 
 export const createContact = data =>
