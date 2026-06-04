@@ -153,6 +153,18 @@ export default function Dashboard({ leads, statuses, contacts, customers = [], o
     }
   }, [leads, statuses])
 
+  const customerMetrics = useMemo(() => {
+    const active  = customers.filter(c => c.status === 'activo')
+    const mrr     = active.reduce((s, c) => s + (c.monthly_value || 0), 0)
+    const arr     = mrr * 12
+    const avgMrr  = active.length ? mrr / active.length : 0
+    const fmtEur  = (v: number) =>
+      v > 0
+        ? new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR', maximumFractionDigits: 0 }).format(v)
+        : '—'
+    return { activeCount: active.length, total: customers.length, mrr, arr, avgMrr, fmtEur }
+  }, [customers])
+
   const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
   return (
