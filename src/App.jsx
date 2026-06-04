@@ -391,9 +391,6 @@ export default function App() {
         onToggleTheme={toggleTheme}
         leads={leads}
         onSave={handleSave}
-        onExportCSV={exportCSV}
-        onExportJSON={exportJSON}
-        onImport={importData}
         activeNav={activeNav}
         onNavChange={setActiveNav}
         username={authUser}
