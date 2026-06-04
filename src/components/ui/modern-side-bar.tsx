@@ -357,33 +357,6 @@ export function Sidebar({
             <NavItem id="clientes" icon={<Building2 size={14}/>} label="Clientes" collapsed active={activeNav === 'clientes'} onClick={() => onNavChange('clientes')} />
           )}
 
-          {/* ── ACCIONES ──────────── */}
-          <SectionHeader
-            icon={<Zap size={14}/>}
-            label="Acciones"
-            expanded={expanded.acciones}
-            collapsed={isCollapsed}
-            onToggle={() => toggleSection('acciones')}
-          />
-          {expanded.acciones && !isCollapsed && (
-            <div className="mb-1">
-              {actions.map(act => (
-                <ActionItem
-                  key={act.id} {...act}
-                  collapsed={isCollapsed}
-                  onClick={() => handleAction(act.id)}
-                />
-              ))}
-            </div>
-          )}
-          {isCollapsed && actions.map(act => (
-            <ActionItem
-              key={act.id} {...act}
-              collapsed={isCollapsed}
-              onClick={() => handleAction(act.id)}
-            />
-          ))}
-
           {/* ── CONFIGURACIÓN ─────── */}
           <SectionHeader
             icon={<Settings size={14}/>}
