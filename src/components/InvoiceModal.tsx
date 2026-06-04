@@ -35,7 +35,7 @@ const STATUS_OPTIONS = [
 const today = new Date().toISOString().slice(0, 10)
 const DEFAULT: Omit<Invoice, 'customer_id'> = {
   invoice_number: '', issue_date: today, due_date: null,
-  amount: 0, tax_pct: 21, status: 'borrador', description: '', notes: '',
+  amount: 0, tax_pct: 21, status: 'cotizacion', description: '', notes: '',
 }
 
 export default function InvoiceModal({ invoice, onSave, onClose }: Props) {
