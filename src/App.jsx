@@ -451,6 +451,9 @@ export default function App() {
                 setLeads(prev => { const next = prev.filter(l => l.id !== id); persist({ leads: next }); return next })
                 showToast('Lead eliminado')
               }}
+              onExportCSV={exportCSV}
+              onExportJSON={exportJSON}
+              onImport={importData}
             />
           </>
         )}
