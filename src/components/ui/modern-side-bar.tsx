@@ -233,15 +233,9 @@ export function Sidebar({
     : '✓ Google Maps API';
 
   const actions = [
-    { id: 'save',   icon: <Save size={14}/>,            label: 'Guardar',        accent: true },
     { id: 'csv',    icon: <TableProperties size={14}/>,  label: 'Exportar CSV'  },
     { id: 'json',   icon: <FileJson size={14}/>,         label: 'Exportar JSON' },
     { id: 'import', icon: <Upload size={14}/>,           label: 'Importar JSON' },
-    {
-      id: 'theme',
-      icon: theme === 'light' ? <Moon size={14}/> : <Sun size={14}/>,
-      label: theme === 'light' ? 'Modo oscuro' : 'Modo claro',
-    },
   ];
 
   return (
@@ -408,6 +402,16 @@ export function Sidebar({
                   <div style={{ fontSize: '11px', color: 'var(--txt3)' }}>{leads.length} leads activos</div>
                 </div>
               </div>
+              <button
+                onClick={() => handleAction('theme')}
+                className="w-full flex items-center justify-center gap-1.5 font-semibold mb-2"
+                style={{ color: 'var(--txt2)', border: '1px solid var(--bor2)', borderRadius: 'var(--r2)', padding: '8px 12px', fontSize: '13px', background: 'transparent', cursor: 'pointer', transition: 'background .15s' }}
+                onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
+                onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+              >
+                {theme === 'light' ? <Moon size={13}/> : <Sun size={13}/>}
+                {theme === 'light' ? 'Modo oscuro' : 'Modo claro'}
+              </button>
               <button
                 onClick={onLogout}
                 className="w-full flex items-center justify-center gap-1.5 font-semibold"
