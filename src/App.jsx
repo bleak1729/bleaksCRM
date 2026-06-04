@@ -6,7 +6,6 @@ import LeadTable     from './components/LeadTable.tsx'
 import LeadEditModal from './components/LeadEditModal.tsx'
 import Dashboard     from './components/Dashboard.tsx'
 import { getHealth, loadData, saveData, startSearch } from './api.js'
-import { INIT_LEADS } from './data/init-leads.js'
 
 
 // Inicializa el tema desde localStorage (evita flash antes del primer render)
@@ -54,12 +53,12 @@ export default function App() {
   useEffect(() => {
     loadData()
       .then(d => {
-        setLeads(   d.leads?.length ? d.leads    : [...INIT_LEADS])
-        setContacts(d.contacts  || {})
-        setNotes(   d.notes     || {})
-        setStatuses(d.statuses  || {})
+        setLeads(   d.leads    || [])
+        setContacts(d.contacts || {})
+        setNotes(   d.notes    || {})
+        setStatuses(d.statuses || {})
       })
-      .catch(() => setLeads([...INIT_LEADS]))
+      .catch(err => console.error('Error cargando datos:', err))
 
     getHealth()
       .then(setHealth)
