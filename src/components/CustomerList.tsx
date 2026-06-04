@@ -83,7 +83,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 }
 
 /* ── Main component ──────────────────────────────────────────────── */
-export default function CustomerList({ customers, projects, onSave, onDelete, onSaveProject, onDeleteProject, onViewLead }: Props) {
+export default function CustomerList({ customers, projects, customerContacts, invoices, documents, onSave, onDelete, onSaveProject, onDeleteProject, onSaveContact, onDeleteContact, onSaveInvoice, onDeleteInvoice, onSaveDocument, onDeleteDocument, onViewLead }: Props) {
   const [filter,        setFilter]        = useState('all')
   const [query,         setQuery]         = useState('')
   const [editCustomer,  setEditCustomer]  = useState<Customer | null>(null)
