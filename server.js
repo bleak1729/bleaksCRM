@@ -10,12 +10,36 @@ const PDFDocument            = require('pdfkit');
 const { createClient }      = require('@supabase/supabase-js');
 const { google }            = require('googleapis');
 
-const app            = express();
-const PORT           = process.env.PORT || 3000;
-const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY  || '';
-const SUPABASE_URL   = process.env.SUPABASE_URL         || '';
-const SUPABASE_KEY   = process.env.SUPABASE_SERVICE_KEY || '';
-const JWT_SECRET     = process.env.JWT_SECRET           || 'bleaks-crm-secret';
+const app                  = express();
+const PORT                 = process.env.PORT || 3000;
+const GOOGLE_API_KEY       = process.env.GOOGLE_MAPS_API_KEY      || '';
+const SUPABASE_URL         = process.env.SUPABASE_URL             || '';
+const SUPABASE_KEY         = process.env.SUPABASE_SERVICE_KEY     || '';
+const JWT_SECRET           = process.env.JWT_SECRET               || 'bleaks-crm-secret';
+const DRIVE_KEY_FILE       = process.env.GOOGLE_DRIVE_KEY_FILE    || '';
+const DRIVE_ROOT_FOLDER_ID = process.env.GOOGLE_DRIVE_ROOT_FOLDER_ID || '';
+
+// ── Google Drive helpers ──────────────────────────────────────────
+async function getDrive() {
+  if (!DRIVE_KEY_FILE || !fs.existsSync(DRIVE_KEY_FILE)) return null;
+  const auth = new google.auth.GoogleAuth({
+    keyFile: DRIVE_KEY_FILE,
+    scopes: ['https://www.googleapis.com/auth/drive'],
+  });
+  return google.drive({ version: 'v3', auth });
+}
+
+async function createDriveFolder(name, parentId) {
+  const drive = await getDrive();
+  if (!drive || !parentId) return null;
+  try {
+    const { data } = await drive.files.create({
+      requestBody: { name, mimeType: 'application/vnd.google-apps.folder', parents: [parentId] },
+      fields: 'id,webViewLink',
+    });
+    return data.webViewLink || null;
+  } catch { return null; }
+}
 
 const supabase = SUPABASE_URL && SUPABASE_KEY
   ? createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } })
