@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
 import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Phone, Globe, MapPin } from 'lucide-react'
-import { Badge }  from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
+import { Badge }         from '@/components/ui/badge'
+import { Button }        from '@/components/ui/button'
+import ConfirmDialog     from './ConfirmDialog'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -53,9 +54,12 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
 }
 
 export default function LeadTable({ leads, statuses, filter, onFilter, onEdit, onDelete }: Props) {
-  const [search,  setSearch]  = useState('')
-  const [sortCol, setSortCol] = useState<SortCol>('name')
-  const [sortDir, setSortDir] = useState<SortDir>('asc')
+  const [search,      setSearch]      = useState('')
+  const [sortCol,     setSortCol]     = useState<SortCol>('name')
+  const [sortDir,     setSortDir]     = useState<SortDir>('asc')
+  const [confirmId,   setConfirmId]   = useState<string | null>(null)
+
+  const confirmLead = confirmId ? leads.find(l => l.id === confirmId) : null
 
   const handleSort = (col: SortCol) => {
     if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
@@ -287,7 +291,7 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onEdit, o
                           variant="ghost"
                           size="icon-sm"
                           shape="square"
-                          onClick={() => onDelete(lead.id)}
+                          onClick={() => setConfirmId(lead.id)}
                           title="Eliminar lead"
                           style={{ color: 'var(--danger)', border: '1px solid var(--bor2)', background: 'var(--bg2)' }}
                         >
@@ -303,5 +307,15 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onEdit, o
         </Table>
       </div>
     </div>
+
+    {confirmLead && (
+      <ConfirmDialog
+        title="Eliminar lead"
+        message={`¿Seguro que quieres eliminar "${confirmLead.name}"? Esta acción no se puede deshacer.`}
+        confirmLabel="Sí, eliminar"
+        onConfirm={() => { onDelete!(confirmLead.id); setConfirmId(null) }}
+        onCancel={() => setConfirmId(null)}
+      />
+    )}
   )
 }
