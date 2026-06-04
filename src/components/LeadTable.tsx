@@ -113,6 +113,7 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onEdit, o
   )
 
   return (
+    <>
     <div className="flex flex-col" style={{ flex: 1 }}>
       {/* Barra única: pipeline + búsqueda + contador */}
       <div className="filter-controls" aria-label="Filtros">
@@ -317,5 +318,6 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onEdit, o
         onCancel={() => setConfirmId(null)}
       />
     )}
+    </>
   )
 }
