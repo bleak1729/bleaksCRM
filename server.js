@@ -614,6 +614,18 @@ app.get('/api/projects', requireAuth, async (req, res) => {
 app.post('/api/projects', requireAuth, async (req, res) => {
   if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
   const { id, created_at, updated_at, ...fields } = req.body;
+  // Auto-crear subcarpeta en Drive dentro de la carpeta del cliente
+  if (fields.customer_id && fields.name) {
+    const { data: cust } = await supabase
+      .from('customers').select('drive_folder_url').eq('id', fields.customer_id).single();
+    if (cust?.drive_folder_url) {
+      const parentId = cust.drive_folder_url.match(/folders\/([^?/]+)/)?.[1];
+      if (parentId) {
+        const url = await createDriveFolder(fields.name, parentId);
+        if (url) fields.drive_folder_url = url;
+      }
+    }
+  }
   const { data, error } = await supabase
     .from('projects').insert(fields).select().single();
   if (error) return res.status(500).json({ error: error.message });
