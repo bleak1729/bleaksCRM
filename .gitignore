@@ -25,3 +25,6 @@ npm-debug.log*
 
 # Claude Code (interno)
 .claude/
+
+# Scripts de migración (uso puntual)
+migrate.js
