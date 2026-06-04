@@ -61,7 +61,6 @@ export default function InvoiceModal({ invoice, onSave, onClose }: Props) {
 
   const handleSubmit = () => {
     const errs: Record<string, string> = {}
-    if (!form.invoice_number.trim()) errs.invoice_number = 'El número de factura es obligatorio'
     if (!form.amount || form.amount <= 0) errs.amount = 'El importe debe ser mayor que 0'
     if (Object.keys(errs).length) { setErrors(errs); return }
     onSave(form)
