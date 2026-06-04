@@ -6,16 +6,28 @@ import CustomerModal      from './CustomerModal'
 import ProjectModal       from './ProjectModal'
 import type { Customer }  from './CustomerModal'
 import type { Project }   from './ProjectModal'
+import type { CustomerContact } from './ContactModal'
+import type { Invoice }         from './InvoiceModal'
+import type { Document }        from './DocumentModal'
 
 /* ── Props ───────────────────────────────────────────────────────── */
 interface Props {
-  customers:       Customer[]
-  projects:        Project[]
-  onSave:          (c: Customer) => void
-  onDelete:        (id: string) => void
-  onSaveProject:   (p: Project) => void
-  onDeleteProject: (id: string) => void
-  onViewLead?:     (leadId: string) => void
+  customers:        Customer[]
+  projects:         Project[]
+  customerContacts: CustomerContact[]
+  invoices:         Invoice[]
+  documents:        Document[]
+  onSave:           (c: Customer) => void
+  onDelete:         (id: string) => void
+  onSaveProject:    (p: Project) => void
+  onDeleteProject:  (id: string) => void
+  onSaveContact:    (c: CustomerContact) => void
+  onDeleteContact:  (id: string) => void
+  onSaveInvoice:    (inv: Invoice) => void
+  onDeleteInvoice:  (id: string) => void
+  onSaveDocument:   (d: Document) => void
+  onDeleteDocument: (id: string) => void
+  onViewLead?:      (leadId: string) => void
 }
 
 /* ── Helpers ─────────────────────────────────────────────────────── */
