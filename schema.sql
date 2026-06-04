@@ -145,8 +145,8 @@ CREATE TABLE IF NOT EXISTS invoices (
   due_date       DATE,
   amount         NUMERIC     NOT NULL DEFAULT 0,
   tax_pct        NUMERIC     NOT NULL DEFAULT 21,
-  status         TEXT        NOT NULL DEFAULT 'borrador'
-                               CHECK (status IN ('borrador','enviada','pagada','vencida')),
+  status         TEXT        NOT NULL DEFAULT 'cotizacion'
+                               CHECK (status IN ('cotizacion','enviada','pagada','vencida')),
   description    TEXT        NOT NULL DEFAULT '',
   notes          TEXT        NOT NULL DEFAULT '',
   created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
