@@ -573,6 +573,11 @@ app.get('/api/customers', requireAuth, async (_req, res) => {
 app.post('/api/customers', requireAuth, async (req, res) => {
   if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
   const { id, created_at, updated_at, ...fields } = req.body;
+  // Auto-crear carpeta en Drive si está configurado
+  if (DRIVE_ROOT_FOLDER_ID && fields.name) {
+    const url = await createDriveFolder(fields.name, DRIVE_ROOT_FOLDER_ID);
+    if (url) fields.drive_folder_url = url;
+  }
   const { data, error } = await supabase
     .from('customers').insert(fields).select().single();
   if (error) return res.status(500).json({ error: error.message });
