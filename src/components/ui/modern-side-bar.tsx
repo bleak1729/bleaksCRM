@@ -271,29 +271,29 @@ export function Sidebar({
       )}>
 
         {/* ── Header: Logo ─────────────────────────────────────── */}
-        <div className="flex items-center justify-between px-4 pt-5 pb-4 flex-shrink-0"
+        <div className="flex items-center justify-between px-4 pt-4 pb-4 flex-shrink-0"
           style={{ borderBottom: '1px solid var(--bor2)' }}>
           {!isCollapsed ? (
-            <div className="min-w-0">
-              <div className="sb-brand-title">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
-                  stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                  <polyline points="9 22 9 12 15 12 15 22"/>
-                </svg>
-                Bleak's Solutions
-                <span style={{ fontSize: '12px', fontWeight: 400, opacity: .6 }}>CRM</span>
+            <div className="flex items-center gap-2.5 min-w-0">
+              <img
+                src="/logo.png"
+                alt="Bleak's Solutions CRM"
+                style={{ width: 36, height: 36, objectFit: 'contain', borderRadius: 6, flexShrink: 0 }}
+              />
+              <div className="min-w-0">
+                <div className="sb-brand-title" style={{ fontSize: 15 }}>
+                  Bleak's Solutions
+                  <span style={{ fontSize: '11px', fontWeight: 400, opacity: .55 }}>CRM</span>
+                </div>
+                <div className="sb-brand-sub">B2B Lead Management</div>
               </div>
-              <div className="sb-brand-sub">B2B Lead Management</div>
             </div>
           ) : (
-            <div style={{ width: 28, height: 28, background: 'var(--ac-tint)', borderRadius: 'var(--r)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--ac)', margin: '0 auto' }}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
-                stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                <polyline points="9 22 9 12 15 12 15 22"/>
-              </svg>
-            </div>
+            <img
+              src="/logo.png"
+              alt="Logo"
+              style={{ width: 34, height: 34, objectFit: 'contain', borderRadius: 6, margin: '0 auto', display: 'block' }}
+            />
           )}
           <button
             onClick={() => setIsCollapsed(v => !v)}
