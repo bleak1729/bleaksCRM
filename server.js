@@ -12,9 +12,7 @@ const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY || '';
 const SUPABASE_URL   = process.env.SUPABASE_URL        || '';
 const SUPABASE_KEY   = process.env.SUPABASE_SERVICE_KEY || '';
 
-// Fallback a data.json si Supabase no está configurado
-const DATA_FILE = path.join(__dirname, 'data.json');
-const supabase  = SUPABASE_URL && SUPABASE_KEY
+const supabase = SUPABASE_URL && SUPABASE_KEY
   ? createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } })
   : null;
 
@@ -63,78 +61,64 @@ function toRows({ leads = [], contacts = {}, notes = {}, statuses = {} }) {
 
 // Convierte filas de Supabase → el payload que espera el frontend
 function fromRows(rows = []) {
-  const leads    = rows.map(({ status, note, contacts, ...rest }) => rest);
+  // Excluimos los campos que son solo de la DB del objeto lead
+  const leads = rows.map(({ status, note, contacts, created_at, updated_at, ...rest }) => rest);
   const statuses = Object.fromEntries(rows.map(r => [r.id, r.status]));
-  const notes    = Object.fromEntries(rows.map(r => [r.id, r.note]));
+  const notes    = Object.fromEntries(rows.map(r => [r.id, r.note || '']));
   const contacts = Object.fromEntries(rows.map(r => [r.id, r.contacts || {}]));
   return { leads, statuses, notes, contacts };
 }
 
 // ── DATOS — lectura ───────────────────────────────────────────────────────────
 app.get('/api/data', async (_req, res) => {
-  // ── Supabase ──
-  if (supabase) {
-    const { data, error } = await supabase
-      .from('leads')
-      .select('*')
-      .order('created_at', { ascending: true });
-
-    if (error) return res.status(500).json({ error: error.message });
-    return res.json(fromRows(data));
+  if (!supabase) {
+    return res.status(503).json({ error: 'Supabase no configurado. Añade SUPABASE_URL y SUPABASE_SERVICE_KEY en .env' });
   }
 
-  // ── Fallback archivo local ──
-  try {
-    const raw = fs.readFileSync(DATA_FILE, 'utf8');
-    res.json(JSON.parse(raw));
-  } catch {
-    res.json({ leads: [], contacts: {}, notes: {}, statuses: {} });
-  }
+  const { data, error } = await supabase
+    .from('leads')
+    .select('*')
+    .order('created_at', { ascending: true });
+
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(fromRows(data || []));
 });
 
 // ── DATOS — escritura (sincronización completa) ───────────────────────────────
 app.post('/api/data', async (req, res) => {
-  // ── Supabase ──
-  if (supabase) {
-    try {
-      const rows = toRows(req.body);
-
-      if (rows.length === 0) {
-        // Borrar todo si el payload llega vacío
-        await supabase.from('leads').delete().neq('id', '');
-        return res.json({ ok: true });
-      }
-
-      // 1. IDs que envía el cliente
-      const incomingIds = rows.map(r => r.id);
-
-      // 2. Borrar los que ya no existen
-      await supabase
-        .from('leads')
-        .delete()
-        .not('id', 'in', `(${incomingIds.map(id => `"${id}"`).join(',')})`);
-
-      // 3. Upsert en lotes de 500
-      const BATCH = 500;
-      for (let i = 0; i < rows.length; i += BATCH) {
-        const { error } = await supabase
-          .from('leads')
-          .upsert(rows.slice(i, i + BATCH), { onConflict: 'id' });
-        if (error) throw new Error(error.message);
-      }
-
-      return res.json({ ok: true });
-    } catch (e) {
-      return res.status(500).json({ error: e.message });
-    }
+  if (!supabase) {
+    return res.status(503).json({ error: 'Supabase no configurado' });
   }
 
-  // ── Fallback archivo local ──
   try {
-    fs.writeFileSync(DATA_FILE, JSON.stringify(req.body, null, 2));
-    res.json({ ok: true });
+    const rows        = toRows(req.body);
+    const incomingIds = new Set(rows.map(r => r.id));
+
+    // 1. IDs actuales en la DB
+    const { data: existing, error: fetchErr } = await supabase
+      .from('leads')
+      .select('id');
+    if (fetchErr) throw new Error(fetchErr.message);
+
+    // 2. Borrar leads que ya no existen en el cliente
+    const toDelete = (existing || []).map(r => r.id).filter(id => !incomingIds.has(id));
+    if (toDelete.length > 0) {
+      const { error: delErr } = await supabase.from('leads').delete().in('id', toDelete);
+      if (delErr) throw new Error(delErr.message);
+    }
+
+    // 3. Upsert en lotes de 500
+    const BATCH = 500;
+    for (let i = 0; i < rows.length; i += BATCH) {
+      const { error } = await supabase
+        .from('leads')
+        .upsert(rows.slice(i, i + BATCH), { onConflict: 'id' });
+      if (error) throw new Error(error.message);
+    }
+
+    return res.json({ ok: true });
   } catch (e) {
-    res.status(500).json({ error: e.message });
+    return res.status(500).json({ error: e.message });
   }
 });
 
