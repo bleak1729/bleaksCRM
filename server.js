@@ -648,6 +648,208 @@ app.delete('/api/projects/:id', requireAuth, async (req, res) => {
   return res.json({ ok: true });
 });
 
+// ── CUSTOMER CONTACTS ────────────────────────────────────────────────────────
+
+app.get('/api/customer-contacts', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  let q = supabase.from('customer_contacts').select('*').order('is_primary', { ascending: false }).order('created_at', { ascending: true });
+  if (req.query.customer_id) q = q.eq('customer_id', req.query.customer_id);
+  const { data, error } = await q;
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data || []);
+});
+
+app.post('/api/customer-contacts', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { id, created_at, ...fields } = req.body;
+  const { data, error } = await supabase.from('customer_contacts').insert(fields).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(201).json(data);
+});
+
+app.put('/api/customer-contacts/:id', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { id, created_at, ...fields } = req.body;
+  const { data, error } = await supabase.from('customer_contacts').update(fields).eq('id', req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data);
+});
+
+app.delete('/api/customer-contacts/:id', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { error } = await supabase.from('customer_contacts').delete().eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json({ ok: true });
+});
+
+// ── INVOICES ─────────────────────────────────────────────────────────────────
+
+app.get('/api/invoices', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  let q = supabase.from('invoices').select('*').order('issue_date', { ascending: false });
+  if (req.query.customer_id) q = q.eq('customer_id', req.query.customer_id);
+  const { data, error } = await q;
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data || []);
+});
+
+app.post('/api/invoices', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { id, created_at, updated_at, ...fields } = req.body;
+  const { data, error } = await supabase.from('invoices').insert(fields).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(201).json(data);
+});
+
+app.put('/api/invoices/:id', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { id, created_at, updated_at, ...fields } = req.body;
+  const { data, error } = await supabase.from('invoices').update(fields).eq('id', req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data);
+});
+
+app.delete('/api/invoices/:id', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { error } = await supabase.from('invoices').delete().eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json({ ok: true });
+});
+
+// ── INVOICE PDF ───────────────────────────────────────────────────────────────
+
+app.get('/api/invoices/:id/pdf', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+
+  const { data: inv, error: invErr } = await supabase
+    .from('invoices').select('*, customers(name, address, email, phone)').eq('id', req.params.id).single();
+  if (invErr || !inv) return res.status(404).json({ error: 'Factura no encontrada' });
+
+  const subtotal = Number(inv.amount) || 0;
+  const taxAmt   = subtotal * (Number(inv.tax_pct) || 21) / 100;
+  const total    = subtotal + taxAmt;
+  const fmtEur   = v => new Intl.NumberFormat('es-ES', { style: 'currency', currency: 'EUR' }).format(v);
+  const fmtDate  = d => d ? new Date(d).toLocaleDateString('es-ES', { day: '2-digit', month: 'long', year: 'numeric' }) : '—';
+
+  const doc = new PDFDocument({ margin: 50, size: 'A4' });
+  res.setHeader('Content-Type', 'application/pdf');
+  res.setHeader('Content-Disposition', `attachment; filename="factura-${inv.invoice_number || inv.id}.pdf"`);
+  doc.pipe(res);
+
+  const acColor = '#2d5a70';
+
+  // ── Header ──
+  doc.fontSize(22).fillColor(acColor).font('Helvetica-Bold').text("Bleak's Solutions", 50, 50);
+  doc.fontSize(10).fillColor('#6b7280').font('Helvetica').text('CRM & SaaS Agency', 50, 76);
+
+  // ── Factura label ──
+  doc.fontSize(28).fillColor(acColor).font('Helvetica-Bold').text('FACTURA', 350, 50, { align: 'right' });
+  doc.fontSize(11).fillColor('#374151').font('Helvetica')
+    .text(`Nº ${inv.invoice_number || '—'}`, 350, 86, { align: 'right' });
+
+  // ── Separador ──
+  doc.moveTo(50, 110).lineTo(545, 110).strokeColor(acColor).lineWidth(2).stroke();
+
+  // ── Datos cliente y fechas ──
+  const customer = inv.customers || {};
+  doc.fontSize(9).fillColor('#6b7280').font('Helvetica-Bold').text('FACTURAR A:', 50, 125);
+  doc.fontSize(11).fillColor('#111827').font('Helvetica-Bold').text(customer.name || '—', 50, 140);
+  doc.fontSize(10).fillColor('#374151').font('Helvetica')
+    .text(customer.address || '', 50, 156)
+    .text(customer.email   || '', 50, 170)
+    .text(customer.phone   || '', 50, 184);
+
+  doc.fontSize(9).fillColor('#6b7280').font('Helvetica-Bold').text('FECHA EMISIÓN:', 350, 125);
+  doc.fontSize(10).fillColor('#374151').font('Helvetica').text(fmtDate(inv.issue_date), 350, 140);
+  if (inv.due_date) {
+    doc.fontSize(9).fillColor('#6b7280').font('Helvetica-Bold').text('VENCIMIENTO:', 350, 157);
+    doc.fontSize(10).fillColor('#374151').font('Helvetica').text(fmtDate(inv.due_date), 350, 172);
+  }
+
+  // ── Estado ──
+  const statusColors = { pagada: '#15803d', enviada: '#2563eb', vencida: '#dc2626', borrador: '#6b7280' };
+  const sColor = statusColors[inv.status] || '#6b7280';
+  doc.roundedRect(350, inv.due_date ? 190 : 157, 80, 20, 4).fill(sColor);
+  doc.fontSize(9).fillColor('#fff').font('Helvetica-Bold')
+    .text((inv.status || 'borrador').toUpperCase(), 355, inv.due_date ? 195 : 162);
+
+  // ── Tabla de conceptos ──
+  const tableY = 230;
+  doc.rect(50, tableY, 495, 28).fill(acColor);
+  doc.fontSize(10).fillColor('#fff').font('Helvetica-Bold')
+    .text('Descripción', 60, tableY + 9)
+    .text('Importe', 460, tableY + 9, { align: 'right', width: 75 });
+
+  const rowY = tableY + 28;
+  doc.rect(50, rowY, 495, 32).fill('#f9fafb');
+  doc.fontSize(10).fillColor('#111827').font('Helvetica')
+    .text(inv.description || 'Servicios profesionales', 60, rowY + 10, { width: 360 })
+    .text(fmtEur(subtotal), 460, rowY + 10, { align: 'right', width: 75 });
+
+  // ── Totales ──
+  const totY = rowY + 60;
+  doc.moveTo(350, totY).lineTo(545, totY).strokeColor('#e5e7eb').lineWidth(1).stroke();
+
+  doc.fontSize(10).fillColor('#374151').font('Helvetica')
+    .text('Subtotal:', 350, totY + 8)
+    .text(fmtEur(subtotal), 460, totY + 8, { align: 'right', width: 75 });
+
+  doc.text(`IVA (${inv.tax_pct || 21}%):`, 350, totY + 24)
+    .text(fmtEur(taxAmt), 460, totY + 24, { align: 'right', width: 75 });
+
+  doc.moveTo(350, totY + 42).lineTo(545, totY + 42).strokeColor(acColor).lineWidth(1.5).stroke();
+
+  doc.fontSize(13).fillColor(acColor).font('Helvetica-Bold')
+    .text('TOTAL:', 350, totY + 50)
+    .text(fmtEur(total), 460, totY + 50, { align: 'right', width: 75 });
+
+  // ── Notas ──
+  if (inv.notes) {
+    doc.fontSize(9).fillColor('#6b7280').font('Helvetica-Bold').text('NOTAS:', 50, totY + 50);
+    doc.fontSize(9).fillColor('#374151').font('Helvetica').text(inv.notes, 50, totY + 64, { width: 250 });
+  }
+
+  // ── Footer ──
+  doc.fontSize(8).fillColor('#9ca3af').font('Helvetica')
+    .text("Bleak's Solutions — bleakssolutions.com", 50, 760, { align: 'center', width: 495 });
+
+  doc.end();
+});
+
+// ── DOCUMENTS ────────────────────────────────────────────────────────────────
+
+app.get('/api/documents', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  let q = supabase.from('documents').select('*').order('created_at', { ascending: false });
+  if (req.query.customer_id) q = q.eq('customer_id', req.query.customer_id);
+  const { data, error } = await q;
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data || []);
+});
+
+app.post('/api/documents', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { id, created_at, ...fields } = req.body;
+  const { data, error } = await supabase.from('documents').insert(fields).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  return res.status(201).json(data);
+});
+
+app.put('/api/documents/:id', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { id, created_at, ...fields } = req.body;
+  const { data, error } = await supabase.from('documents').update(fields).eq('id', req.params.id).select().single();
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json(data);
+});
+
+app.delete('/api/documents/:id', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { error } = await supabase.from('documents').delete().eq('id', req.params.id);
+  if (error) return res.status(500).json({ error: error.message });
+  return res.json({ ok: true });
+});
+
 // ── EXPORT para Vercel serverless / START para desarrollo local ───────────────
 module.exports = app;
 
