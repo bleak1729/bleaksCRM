@@ -179,7 +179,7 @@ function ActionItem({
 /* ── Main sidebar ────────────────────────────────────────────── */
 export function Sidebar({
   health, theme, onToggleTheme, leads,
-  onSave, onExportCSV, onExportJSON, onImport,
+  onSave,
   activeNav, onNavChange,
   username, onLogout,
   className = '',
@@ -189,10 +189,8 @@ export function Sidebar({
   const [expanded,    setExpanded]    = useState<Record<string, boolean>>({
     leads:    true,
     clientes: true,
-    acciones: true,
     config:   false,
   });
-  const importRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     const fn = () => setIsOpen(window.innerWidth >= 768);
