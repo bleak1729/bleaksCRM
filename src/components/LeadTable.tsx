@@ -30,6 +30,7 @@ const FILTER_OPTIONS = [
   { value: 'all',           label: 'Todos los leads'  },
   { value: 'sin contactar', label: 'Sin contactar'    },
   { value: 'en proceso',    label: 'En proceso'       },
+  { value: 'mockup',        label: 'MockUp'           },
   { value: 'cliente',       label: 'Clientes'         },
   { value: 'descartado',    label: 'Descartados'      },
 ]
@@ -40,9 +41,10 @@ const PRIO: Record<string, { variant: 'danger'|'warning'|'success'; label: strin
   med:  { variant: 'warning', label: 'Media' },
   low:  { variant: 'success', label: 'Baja'  },
 }
-const STATUS: Record<string, 'neutral'|'warning'|'success'|'danger'> = {
+const STATUS: Record<string, 'neutral'|'warning'|'success'|'danger'|'default'> = {
   'sin contactar': 'neutral',
   'en proceso':    'warning',
+  'mockup':        'default',
   'cliente':       'success',
   'descartado':    'danger',
 }

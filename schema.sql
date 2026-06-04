@@ -15,7 +15,7 @@ CREATE TABLE IF NOT EXISTS leads (
   priority    TEXT        NOT NULL DEFAULT 'med'
                 CHECK (priority IN ('high', 'med', 'low')),
   status      TEXT        NOT NULL DEFAULT 'sin contactar'
-                CHECK (status IN ('sin contactar', 'en proceso', 'cliente', 'descartado')),
+                CHECK (status IN ('sin contactar', 'en proceso', 'mockup', 'cliente', 'descartado')),
   rating      NUMERIC,
   reviews     INTEGER     NOT NULL DEFAULT 0,
   flaws       TEXT[]      NOT NULL DEFAULT '{}',

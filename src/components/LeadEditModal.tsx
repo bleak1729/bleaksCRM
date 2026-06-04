@@ -30,7 +30,7 @@ interface Props {
   onSave: (id: string, u: LeadUpdates) => void; onClose: () => void;
 }
 
-const STATUSES   = ['sin contactar', 'en proceso', 'cliente', 'descartado']
+const STATUSES   = ['sin contactar', 'en proceso', 'mockup', 'cliente', 'descartado']
 const PRIORITIES = [
   { value: 'high', label: 'Alta',  color: 'var(--danger)',  dot: '#dc2626' },
   { value: 'med',  label: 'Media', color: 'var(--warning)', dot: '#ca8a04' },

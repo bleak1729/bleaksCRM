@@ -23,6 +23,7 @@ const PRIORITY_COLOR: Record<string, string> = {
 const STATUS_LABEL: Record<string, string> = {
   'sin contactar': 'Sin contactar',
   'en proceso':    'En proceso',
+  'mockup':        'MockUp',
   'cliente':       'Cliente',
   'descartado':    'Descartado',
 }
