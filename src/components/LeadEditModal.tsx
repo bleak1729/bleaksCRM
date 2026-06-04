@@ -410,40 +410,44 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
               </ul>
 
               {/* Flaws */}
-              {curFlaws.length > 0 && (
-                <>
-                  <div style={{ height: 1, background: 'var(--bor)', margin: '12px 0' }} />
-                  <div>
-                    <p className="text-xs font-bold uppercase tracking-widest mb-2"
-                      style={{ color: 'var(--txt3)', letterSpacing: '.06em' }}>
-                      Fallos detectados
-                    </p>
-                    <div className="flex flex-wrap gap-1.5">
-                      {curFlaws.map(f => (
-                        <Badge key={f} variant="danger" style={{ fontSize: 11 }}>{f}</Badge>
-                      ))}
-                    </div>
+              <div style={{ height: 1, background: 'var(--bor)', margin: '12px 0' }} />
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2"
+                  style={{ color: 'var(--txt3)', letterSpacing: '.06em' }}>
+                  Fallos detectados
+                </p>
+                {curFlaws.length > 0 ? (
+                  <div className="flex flex-wrap gap-1.5">
+                    {curFlaws.map(f => (
+                      <Badge key={f} variant="danger" style={{ fontSize: 11 }}>{f}</Badge>
+                    ))}
                   </div>
-                </>
-              )}
+                ) : (
+                  <p style={{ fontSize: 12, color: 'var(--txt3)', fontStyle: 'italic' }}>
+                    Sin datos — haz clic en <strong>Analizar</strong>
+                  </p>
+                )}
+              </div>
 
               {/* SaaS opportunities */}
-              {curSaas.length > 0 && (
-                <div className={curFlaws.length ? 'mt-3' : ''}>
-                  {!curFlaws.length && (
-                    <div style={{ height: 1, background: 'var(--bor)', margin: '12px 0' }} />
-                  )}
-                  <p className="text-xs font-bold uppercase tracking-widest mb-2"
-                    style={{ color: 'var(--txt3)', letterSpacing: '.06em' }}>
-                    Oportunidades SaaS
-                  </p>
+              <div style={{ height: 1, background: 'var(--bor)', margin: '12px 0' }} />
+              <div>
+                <p className="text-xs font-bold uppercase tracking-widest mb-2"
+                  style={{ color: 'var(--txt3)', letterSpacing: '.06em' }}>
+                  Oportunidades SaaS
+                </p>
+                {curSaas.length > 0 ? (
                   <div className="flex flex-wrap gap-1.5">
                     {curSaas.map(s => (
                       <Badge key={s} variant="success" style={{ fontSize: 11 }}>{s}</Badge>
                     ))}
                   </div>
-                </div>
-              )}
+                ) : (
+                  <p style={{ fontSize: 12, color: 'var(--txt3)', fontStyle: 'italic' }}>
+                    Sin datos — haz clic en <strong>Analizar</strong>
+                  </p>
+                )}
+              </div>
 
               <div style={{ height: 1, background: 'var(--bor)', margin: '12px 0' }} />
 
