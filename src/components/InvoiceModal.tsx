@@ -35,7 +35,7 @@ interface Props {
 
 /* ── Constants ───────────────────────────────────────────────────── */
 const STATUS_OPTIONS = [
-  { value: 'borrador', label: 'Cotización', color: 'var(--warning)' },
+  { value: 'cotizacion', label: 'Cotización', color: 'var(--warning)' },
   { value: 'enviada',  label: 'Enviada',    color: 'var(--ac)'      },
   { value: 'pagada',   label: 'Pagada',     color: 'var(--success)' },
   { value: 'vencida',  label: 'Vencida',    color: 'var(--danger)'  },
