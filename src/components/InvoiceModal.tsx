@@ -13,7 +13,7 @@ export interface Invoice {
   due_date?:       string | null
   amount:          number
   tax_pct:         number
-  status:          'borrador' | 'enviada' | 'pagada' | 'vencida'
+  status:          'cotizacion' | 'enviada' | 'pagada' | 'vencida'
   description:     string
   notes:           string
   created_at?:     string
