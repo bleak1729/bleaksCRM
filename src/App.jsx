@@ -1,13 +1,16 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Sidebar }   from './components/ui/modern-side-bar.tsx'
-import SearchPanel   from './components/SearchPanel.jsx'
-import KPIStrip      from './components/KPIStrip.jsx'
-import LeadTable     from './components/LeadTable.tsx'
-import LeadEditModal from './components/LeadEditModal.tsx'
-import Dashboard     from './components/Dashboard.tsx'
-import Login         from './components/Login.tsx'
-import NewLeadModal  from './components/NewLeadModal.tsx'
-import { getHealth, loadData, saveData, startSearch, getToken, clearToken } from './api.js'
+import { Sidebar }       from './components/ui/modern-side-bar.tsx'
+import SearchPanel       from './components/SearchPanel.jsx'
+import KPIStrip          from './components/KPIStrip.jsx'
+import LeadTable         from './components/LeadTable.tsx'
+import LeadEditModal     from './components/LeadEditModal.tsx'
+import Dashboard         from './components/Dashboard.tsx'
+import Login             from './components/Login.tsx'
+import NewLeadModal      from './components/NewLeadModal.tsx'
+import CustomerList      from './components/CustomerList.tsx'
+import { getHealth, loadData, saveData, startSearch, getToken, clearToken,
+         loadCustomers, createCustomer, updateCustomer, deleteCustomer,
+         loadProjects, createProject, updateProject, deleteProject } from './api.js'
 
 
 // Inicializa el tema desde localStorage (evita flash antes del primer render)
