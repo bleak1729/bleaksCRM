@@ -158,22 +158,8 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
           spellCheck={false}
         />
 
-        <span className="results-count" style={{ fontFamily: 'var(--fb)' }}>
-          {sorted.length} lead{sorted.length !== 1 ? 's' : ''} encontrados
-        </span>
-
-        {onNewLead && (
-          <Button
-            variant="ghost" size="sm" shape="square"
-            onClick={onNewLead}
-            style={{ fontFamily: 'var(--fd)', fontWeight: 600, background: 'var(--ac)', color: '#fff', border: '1px solid var(--ac)', marginLeft: 8, whiteSpace: 'nowrap' }}
-          >
-            <Plus size={14} /> Nuevo lead
-          </Button>
-        )}
-
         {(onExportCSV || onExportJSON || onImport) && (
-          <div style={{ display: 'flex', gap: 6, marginLeft: 8 }}>
+          <div style={{ display: 'flex', gap: 6 }}>
 
             {/* ── Split button Exportar ─────────────────────────── */}
             <div ref={exportRef} style={{ position: 'relative', display: 'inline-flex' }}>
