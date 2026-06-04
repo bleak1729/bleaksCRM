@@ -85,6 +85,75 @@ export const deleteProject = id =>
   fetch(`/api/projects/${id}`, { method: 'DELETE', headers: authHeaders() })
     .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
 
+// ── Customer Contacts ─────────────────────────────────────────────
+export const loadContacts = (customerId) =>
+  fetch(`/api/customer-contacts?customer_id=${customerId}`, { headers: authHeaders() })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const createContact = data =>
+  fetch('/api/customer-contacts', { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const updateContact = (id, data) =>
+  fetch(`/api/customer-contacts/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const deleteContact = id =>
+  fetch(`/api/customer-contacts/${id}`, { method: 'DELETE', headers: authHeaders() })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+// ── Invoices ──────────────────────────────────────────────────────
+export const loadInvoices = (customerId) =>
+  fetch(`/api/invoices${customerId ? `?customer_id=${customerId}` : ''}`, { headers: authHeaders() })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const createInvoice = data =>
+  fetch('/api/invoices', { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const updateInvoice = (id, data) =>
+  fetch(`/api/invoices/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const deleteInvoice = id =>
+  fetch(`/api/invoices/${id}`, { method: 'DELETE', headers: authHeaders() })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const downloadInvoicePdf = (id) => {
+  const token = localStorage.getItem('bleaks-crm-token') || ''
+  const a = document.createElement('a')
+  a.href = `/api/invoices/${id}/pdf`
+  a.target = '_blank'
+  // Pasamos el token via fetch para forzar descarga
+  fetch(a.href, { headers: { 'Authorization': `Bearer ${token}` } })
+    .then(r => r.blob())
+    .then(blob => {
+      const url = URL.createObjectURL(blob)
+      const link = document.createElement('a')
+      link.href = url
+      link.download = `factura-${id}.pdf`
+      link.click()
+      URL.revokeObjectURL(url)
+    })
+}
+
+// ── Documents ─────────────────────────────────────────────────────
+export const loadDocuments = (customerId) =>
+  fetch(`/api/documents${customerId ? `?customer_id=${customerId}` : ''}`, { headers: authHeaders() })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const createDocument = data =>
+  fetch('/api/documents', { method: 'POST', headers: authHeaders(), body: JSON.stringify(data) })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const updateDocument = (id, data) =>
+  fetch(`/api/documents/${id}`, { method: 'PUT', headers: authHeaders(), body: JSON.stringify(data) })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const deleteDocument = id =>
+  fetch(`/api/documents/${id}`, { method: 'DELETE', headers: authHeaders() })
+    .then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
 // Búsqueda síncrona — devuelve { leads, total, query } directamente
 export const startSearch = body =>
   fetch('/api/search', {
