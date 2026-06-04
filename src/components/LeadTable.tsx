@@ -139,18 +139,74 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
     <div className="flex flex-col" style={{ flex: 1 }}>
       {/* Barra única: pipeline + búsqueda + contador */}
       <div className="filter-controls" aria-label="Filtros">
-        <select
-          value={filter}
-          onChange={e => onFilter(e.target.value)}
-          className="pipeline-select"
-          aria-label="Filtrar por estado del pipeline"
-        >
-          {FILTER_OPTIONS.map(o => (
-            <option key={o.value} value={o.value}>
-              Pipeline: {o.label} — {pipelineCount(o.value)}
-            </option>
-          ))}
-        </select>
+        {/* ── Split button Pipeline ───────────────────────────── */}
+        <div ref={pipelineRef} style={{ position: 'relative', display: 'inline-flex' }}>
+          <button
+            onClick={() => setPipelineOpen(v => !v)}
+            style={{
+              display: 'flex', alignItems: 'center', gap: 5,
+              padding: '0 10px', height: 32,
+              fontFamily: 'var(--fd)', fontSize: '13px', fontWeight: 500,
+              background: 'var(--bg2)', color: 'var(--txt2)',
+              border: '1px solid var(--bor2)', borderRight: 'none',
+              borderRadius: 'var(--r2) 0 0 var(--r2)',
+              cursor: 'pointer', transition: 'background .15s', whiteSpace: 'nowrap',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
+            onMouseLeave={e => (e.currentTarget.style.background = 'var(--bg2)')}
+          >
+            Pipeline: {FILTER_OPTIONS.find(o => o.value === filter)?.label ?? 'Todos los leads'}
+          </button>
+          <button
+            onClick={() => setPipelineOpen(v => !v)}
+            aria-label="Seleccionar filtro de pipeline"
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              width: 26, height: 32,
+              background: pipelineOpen ? 'var(--bg3)' : 'var(--bg2)',
+              color: 'var(--txt2)',
+              border: '1px solid var(--bor2)',
+              borderRadius: '0 var(--r2) var(--r2) 0',
+              cursor: 'pointer', transition: 'background .15s',
+            }}
+            onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
+            onMouseLeave={e => (e.currentTarget.style.background = pipelineOpen ? 'var(--bg3)' : 'var(--bg2)')}
+          >
+            <ChevronDown size={12} style={{ transition: 'transform .15s', transform: pipelineOpen ? 'rotate(180deg)' : 'rotate(0deg)' }}/>
+          </button>
+
+          {pipelineOpen && (
+            <div style={{
+              position: 'absolute', top: 'calc(100% + 6px)', left: 0,
+              background: 'var(--bg2)', border: '1px solid var(--bor2)',
+              borderRadius: 'var(--r2)', padding: 4, minWidth: 200,
+              zIndex: 200, boxShadow: '0 4px 16px rgba(0,0,0,.12)',
+            }}>
+              {FILTER_OPTIONS.map(o => (
+                <button
+                  key={o.value}
+                  onClick={() => { onFilter(o.value); setPipelineOpen(false) }}
+                  style={{
+                    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                    width: '100%', padding: '7px 10px',
+                    fontFamily: 'var(--fb)', fontSize: '13px',
+                    color: filter === o.value ? 'var(--ac)' : 'var(--txt)',
+                    background: filter === o.value ? 'var(--ac-tint)' : 'transparent',
+                    border: 'none', borderRadius: 'var(--r)', cursor: 'pointer',
+                    textAlign: 'left', transition: 'background .12s', fontWeight: filter === o.value ? 600 : 400,
+                  }}
+                  onMouseEnter={e => { if (filter !== o.value) (e.currentTarget.style.background = 'var(--bg3)') }}
+                  onMouseLeave={e => { (e.currentTarget.style.background = filter === o.value ? 'var(--ac-tint)' : 'transparent') }}
+                >
+                  <span>{o.label}</span>
+                  <span style={{ fontSize: '11px', color: filter === o.value ? 'var(--ac)' : 'var(--txt3)', fontFamily: 'var(--fd)', fontWeight: 600 }}>
+                    {pipelineCount(o.value)}
+                  </span>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
 
         <input
           type="text"
