@@ -417,10 +417,19 @@ export default function App() {
           <CustomerList
             customers={customers}
             projects={projects}
+            customerContacts={customerContacts}
+            invoices={invoices}
+            documents={documents}
             onSave={handleSaveCustomer}
             onDelete={handleDeleteCustomer}
             onSaveProject={handleSaveProject}
             onDeleteProject={handleDeleteProject}
+            onSaveContact={handleSaveContact}
+            onDeleteContact={handleDeleteContact}
+            onSaveInvoice={handleSaveInvoice}
+            onDeleteInvoice={handleDeleteInvoice}
+            onSaveDocument={handleSaveDocument}
+            onDeleteDocument={handleDeleteDocument}
             onViewLead={leadId => {
               const lead = leads.find(l => l.id === leadId)
               if (lead) { setEditModalLead(lead); setActiveNav('busqueda') }
