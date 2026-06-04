@@ -125,52 +125,46 @@ export default function App() {
 
   // ── Update lead (desde el modal de edición) ───────────────────
   const updateLead = useCallback((id, updates) => {
-    if (updates.lead) {
-      setLeads(prev => {
-        const next = prev.map(l => l.id === id ? { ...l, ...updates.lead } : l)
-        persist({ leads: next })
-        return next
-      })
-    }
-    if (updates.status !== undefined) {
-      setStatuses(prev => {
-        const next = { ...prev, [id]: updates.status }
-        persist({ statuses: next })
-        return next
-      })
-      // Auto-crear cliente cuando el lead pasa a 'cliente'
-      if (updates.status === 'cliente') {
-        const lead = leadsRef.current.find(l => l.id === id)
-        const alreadyCustomer = customersRef.current.some(c => c.lead_id === id)
-        if (lead && !alreadyCustomer) {
-          const data = {
-            lead_id:  id,
-            name:     lead.name     || '',
-            sector:   lead.sector   || '',
-            email:    lead.email    || '',
-            phone:    lead.phone    || '',
-            address:  lead.loc      || '',
-            website:  lead.url && !lead.url.startsWith('Sin web') ? lead.url : '',
-          }
-          createCustomer(data)
-            .then(c => setCustomers(prev => [c, ...prev]))
-            .catch(() => {})
-        }
+    // Calcular todos los nuevos valores usando los refs actuales
+    const nextLeads    = updates.lead !== undefined
+      ? leadsRef.current.map(l => l.id === id ? { ...l, ...updates.lead } : l)
+      : leadsRef.current
+    const nextStatuses = updates.status !== undefined
+      ? { ...statusesRef.current, [id]: updates.status }
+      : statusesRef.current
+    const nextNotes    = updates.note !== undefined
+      ? { ...notesRef.current, [id]: updates.note }
+      : notesRef.current
+    const nextContacts = updates.contact !== undefined
+      ? { ...contactsRef.current, [id]: updates.contact }
+      : contactsRef.current
+
+    // Actualizar estado
+    if (updates.lead     !== undefined) setLeads(nextLeads)
+    if (updates.status   !== undefined) setStatuses(nextStatuses)
+    if (updates.note     !== undefined) setNotes(nextNotes)
+    if (updates.contact  !== undefined) setContacts(nextContacts)
+
+    // Una sola llamada a persist con todos los datos actualizados
+    persist({ leads: nextLeads, statuses: nextStatuses, notes: nextNotes, contacts: nextContacts })
+
+    // Auto-crear cliente cuando el lead pasa a 'cliente'
+    if (updates.status === 'cliente') {
+      const lead = nextLeads.find(l => l.id === id)
+      const alreadyCustomer = customersRef.current.some(c => c.lead_id === id)
+      if (lead && !alreadyCustomer) {
+        createCustomer({
+          lead_id: id,
+          name:    lead.name    || '',
+          sector:  lead.sector  || '',
+          email:   lead.email   || '',
+          phone:   lead.phone   || '',
+          address: lead.loc     || '',
+          website: lead.url && !lead.url.startsWith('Sin web') ? lead.url : '',
+        })
+          .then(c => setCustomers(prev => [c, ...prev]))
+          .catch(() => {})
       }
-    }
-    if (updates.note !== undefined) {
-      setNotes(prev => {
-        const next = { ...prev, [id]: updates.note }
-        persist({ notes: next })
-        return next
-      })
-    }
-    if (updates.contact !== undefined) {
-      setContacts(prev => {
-        const next = { ...prev, [id]: updates.contact }
-        persist({ contacts: next })
-        return next
-      })
     }
   }, [persist])
 
