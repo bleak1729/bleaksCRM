@@ -102,11 +102,16 @@ export default function InvoiceModal({ invoice, onSave, onClose }: Props) {
 
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
             <div>
-              <Label htmlFor="inv-num">Número de factura *</Label>
-              <Input id="inv-num" value={form.invoice_number} onChange={e => set('invoice_number', e.target.value)}
-                placeholder="FAC-2025-001"
-                style={errors.invoice_number ? { borderColor: 'var(--danger)' } : {}} />
-              {errors.invoice_number && <p style={{ fontSize: 11, color: 'var(--danger)', marginTop: 3 }}>{errors.invoice_number}</p>}
+              <Label>Número de factura</Label>
+              {form.invoice_number ? (
+                <div style={{ padding: '8px 12px', background: 'var(--bg2)', border: '1px solid var(--bor2)', borderRadius: 'var(--r2)', fontSize: 13, fontWeight: 700, color: 'var(--ac)', fontFamily: 'var(--fm)', marginTop: 6 }}>
+                  {form.invoice_number}
+                </div>
+              ) : (
+                <div style={{ padding: '8px 12px', background: 'var(--bg2)', border: '1px dashed var(--bor2)', borderRadius: 'var(--r2)', fontSize: 12, color: 'var(--txt3)', marginTop: 6, fontStyle: 'italic' }}>
+                  Se asigna al guardar
+                </div>
+              )}
             </div>
             <div>
               <Label>Estado</Label>
