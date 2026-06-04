@@ -159,6 +159,44 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
             <Plus size={14} /> Nuevo lead
           </Button>
         )}
+
+        {(onExportCSV || onExportJSON || onImport) && (
+          <div style={{ display: 'flex', gap: 4, marginLeft: 8 }}>
+            {onExportCSV && (
+              <Button
+                variant="ghost" size="sm" shape="square"
+                onClick={onExportCSV}
+                title="Exportar CSV"
+                style={{ fontFamily: 'var(--fd)', fontWeight: 500, background: 'var(--bg2)', color: 'var(--txt2)', border: '1px solid var(--bor2)', whiteSpace: 'nowrap' }}
+              >
+                <TableProperties size={13}/> CSV
+              </Button>
+            )}
+            {onExportJSON && (
+              <Button
+                variant="ghost" size="sm" shape="square"
+                onClick={onExportJSON}
+                title="Exportar JSON"
+                style={{ fontFamily: 'var(--fd)', fontWeight: 500, background: 'var(--bg2)', color: 'var(--txt2)', border: '1px solid var(--bor2)', whiteSpace: 'nowrap' }}
+              >
+                <FileJson size={13}/> JSON
+              </Button>
+            )}
+            {onImport && (
+              <>
+                <Button
+                  variant="ghost" size="sm" shape="square"
+                  onClick={() => importRef.current?.click()}
+                  title="Importar JSON"
+                  style={{ fontFamily: 'var(--fd)', fontWeight: 500, background: 'var(--bg2)', color: 'var(--txt2)', border: '1px solid var(--bor2)', whiteSpace: 'nowrap' }}
+                >
+                  <Upload size={13}/> Importar
+                </Button>
+                <input ref={importRef} type="file" accept=".json" className="hidden" onChange={onImport}/>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Table container */}
