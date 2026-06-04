@@ -198,6 +198,33 @@ export default function Dashboard({ leads, statuses, contacts, customers = [], o
         <KpiCard icon={<Star size={15}/>}        label="Rating medio"      value={m.avgRating}     sub={`${m.topRated.length} leads con valoración`}         color="#d97706"        bg="#fef9c3" />
       </div>
 
+      {/* ── KPI Clientes ─────────────────────────────────────── */}
+      {customerMetrics.total > 0 && (
+        <div className="kpi-grid" style={{ marginBottom: 24, padding: 0 }}>
+          <KpiCard
+            icon={<Building2 size={15}/>}
+            label="Clientes activos"
+            value={customerMetrics.activeCount}
+            sub={`${customerMetrics.total} en total`}
+            color="var(--ac)" bg="var(--ac-tint)"
+          />
+          <KpiCard
+            icon={<Euro size={15}/>}
+            label="MRR mensual"
+            value={customerMetrics.fmtEur(customerMetrics.mrr)}
+            sub={`ARR: ${customerMetrics.fmtEur(customerMetrics.arr)}`}
+            color="var(--success)" bg="var(--success-bg)"
+          />
+          <KpiCard
+            icon={<TrendingUp size={15}/>}
+            label="MRR por cliente"
+            value={customerMetrics.fmtEur(customerMetrics.avgMrr)}
+            sub="Promedio clientes activos"
+            color="var(--warning)" bg="var(--warning-bg)"
+          />
+        </div>
+      )}
+
       {/* ── Pipeline visual ──────────────────────────────────── */}
       {m.total > 0 && (
         <div style={{ background: 'var(--bg2)', border: '1px solid var(--bor2)', borderRadius: 'var(--r3)', padding: '20px 24px', marginBottom: 24, boxShadow: 'var(--shadow)' }}>
