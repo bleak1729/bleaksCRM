@@ -701,7 +701,12 @@ app.post('/api/invoices', requireAuth, async (req, res) => {
   const { count } = await supabase.from('invoices').select('*', { count: 'exact', head: true });
   const num = ((count || 0) + 1).toString().padStart(3, '0');
   fields.invoice_number = `FAC-${year}-${num}`;
-  const { data, error } = await supabase.from('invoices').insert(fields).select().single();
+  // Intentar con line_items; si falla (columna no existe aún), reintentar sin ella
+  let { data, error } = await supabase.from('invoices').insert(fields).select().single();
+  if (error && error.message.includes('line_items')) {
+    const { line_items, ...fieldsNoItems } = fields;
+    ({ data, error } = await supabase.from('invoices').insert(fieldsNoItems).select().single());
+  }
   if (error) return res.status(500).json({ error: error.message });
   return res.status(201).json(data);
 });
@@ -709,7 +714,12 @@ app.post('/api/invoices', requireAuth, async (req, res) => {
 app.put('/api/invoices/:id', requireAuth, async (req, res) => {
   if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
   const { id, created_at, updated_at, ...fields } = req.body;
-  const { data, error } = await supabase.from('invoices').update(fields).eq('id', req.params.id).select().single();
+  // Intentar con line_items; si falla (columna no existe aún), reintentar sin ella
+  let { data, error } = await supabase.from('invoices').update(fields).eq('id', req.params.id).select().single();
+  if (error && error.message.includes('line_items')) {
+    const { line_items, ...fieldsNoItems } = fields;
+    ({ data, error } = await supabase.from('invoices').update(fieldsNoItems).eq('id', req.params.id).select().single());
+  }
   if (error) return res.status(500).json({ error: error.message });
   return res.json(data);
 });
