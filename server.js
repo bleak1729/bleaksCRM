@@ -6,7 +6,9 @@ const path                  = require('path');
 const fs                    = require('fs');
 const bcrypt                = require('bcryptjs');
 const jwt                   = require('jsonwebtoken');
+const PDFDocument            = require('pdfkit');
 const { createClient }      = require('@supabase/supabase-js');
+const { google }            = require('googleapis');
 
 const app            = express();
 const PORT           = process.env.PORT || 3000;
