@@ -121,6 +121,63 @@ CREATE TRIGGER projects_updated_at
 
 ALTER TABLE projects DISABLE ROW LEVEL SECURITY;
 
+-- ── Contactos múltiples por cliente ─────────────────────────────
+CREATE TABLE IF NOT EXISTS customer_contacts (
+  id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id UUID        NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  name        TEXT        NOT NULL DEFAULT '',
+  role        TEXT        NOT NULL DEFAULT '',
+  email       TEXT        NOT NULL DEFAULT '',
+  phone       TEXT        NOT NULL DEFAULT '',
+  is_primary  BOOLEAN     NOT NULL DEFAULT false,
+  notes       TEXT        NOT NULL DEFAULT '',
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_ccontacts_customer ON customer_contacts(customer_id);
+ALTER TABLE customer_contacts DISABLE ROW LEVEL SECURITY;
+
+-- ── Facturas ─────────────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS invoices (
+  id             UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id    UUID        NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  invoice_number TEXT        NOT NULL DEFAULT '',
+  issue_date     DATE        NOT NULL DEFAULT CURRENT_DATE,
+  due_date       DATE,
+  amount         NUMERIC     NOT NULL DEFAULT 0,
+  tax_pct        NUMERIC     NOT NULL DEFAULT 21,
+  status         TEXT        NOT NULL DEFAULT 'borrador'
+                               CHECK (status IN ('borrador','enviada','pagada','vencida')),
+  description    TEXT        NOT NULL DEFAULT '',
+  notes          TEXT        NOT NULL DEFAULT '',
+  created_at     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+  updated_at     TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_invoices_customer ON invoices(customer_id);
+DROP TRIGGER IF EXISTS invoices_updated_at ON invoices;
+CREATE TRIGGER invoices_updated_at
+  BEFORE UPDATE ON invoices FOR EACH ROW EXECUTE FUNCTION update_updated_at();
+ALTER TABLE invoices DISABLE ROW LEVEL SECURITY;
+
+-- ── Documentos (metadatos + link Drive) ──────────────────────────
+CREATE TABLE IF NOT EXISTS documents (
+  id          UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id UUID        NOT NULL REFERENCES customers(id) ON DELETE CASCADE,
+  project_id  UUID        REFERENCES projects(id) ON DELETE SET NULL,
+  title       TEXT        NOT NULL DEFAULT '',
+  type        TEXT        NOT NULL DEFAULT 'otro'
+                            CHECK (type IN ('contrato','propuesta','informe','presupuesto','otro')),
+  drive_url   TEXT        NOT NULL DEFAULT '',
+  doc_date    DATE,
+  notes       TEXT        NOT NULL DEFAULT '',
+  created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_documents_customer ON documents(customer_id);
+ALTER TABLE documents DISABLE ROW LEVEL SECURITY;
+
+-- ── Campos Google Drive en customers y projects ───────────────────
+ALTER TABLE customers ADD COLUMN IF NOT EXISTS drive_folder_url TEXT NOT NULL DEFAULT '';
+ALTER TABLE projects  ADD COLUMN IF NOT EXISTS drive_folder_url TEXT NOT NULL DEFAULT '';
+
 -- ── Vista útil para análisis ──────────────────────────────────────
 CREATE OR REPLACE VIEW leads_summary AS
 SELECT
