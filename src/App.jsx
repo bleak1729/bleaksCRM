@@ -41,10 +41,12 @@ export default function App() {
   const [leads,     setLeads]     = useState([])
   const [activeNav, setActiveNav] = useState('busqueda')
   const [theme,     setTheme]     = useState(getInitialTheme)
-  const [contacts, setContacts] = useState({})
-  const [notes,    setNotes]    = useState({})
-  const [statuses, setStatuses] = useState({})
-  const [filter,   setFilter]   = useState('all')
+  const [contacts,  setContacts]  = useState({})
+  const [notes,     setNotes]     = useState({})
+  const [statuses,  setStatuses]  = useState({})
+  const [filter,    setFilter]    = useState('all')
+  const [customers, setCustomers] = useState([])
+  const [projects,  setProjects]  = useState([])
   const [editModalLead,  setEditModalLead]  = useState(null)
   const [showNewLead,    setShowNewLead]    = useState(false)
   const [health,        setHealth]       = useState(null)
@@ -52,15 +54,17 @@ export default function App() {
   const [search,      setSearch]       = useState({ loading: false, status: '', color: '' })
 
   // Refs to latest state for async closures
-  const leadsRef    = useRef(leads)
-  const contactsRef = useRef(contacts)
-  const notesRef    = useRef(notes)
-  const statusesRef = useRef(statuses)
+  const leadsRef     = useRef(leads)
+  const contactsRef  = useRef(contacts)
+  const notesRef     = useRef(notes)
+  const statusesRef  = useRef(statuses)
+  const customersRef = useRef(customers)
 
-  useEffect(() => { leadsRef.current    = leads    }, [leads])
-  useEffect(() => { contactsRef.current = contacts }, [contacts])
-  useEffect(() => { notesRef.current    = notes    }, [notes])
-  useEffect(() => { statusesRef.current = statuses }, [statuses])
+  useEffect(() => { leadsRef.current     = leads     }, [leads])
+  useEffect(() => { contactsRef.current  = contacts  }, [contacts])
+  useEffect(() => { notesRef.current     = notes     }, [notes])
+  useEffect(() => { statusesRef.current  = statuses  }, [statuses])
+  useEffect(() => { customersRef.current = customers }, [customers])
 
   // ── Tema: aplica data-theme al <html> y persiste en localStorage ──
   useEffect(() => {
