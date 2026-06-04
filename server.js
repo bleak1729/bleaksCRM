@@ -4,13 +4,16 @@ require('dotenv').config();
 const express               = require('express');
 const path                  = require('path');
 const fs                    = require('fs');
+const bcrypt                = require('bcryptjs');
+const jwt                   = require('jsonwebtoken');
 const { createClient }      = require('@supabase/supabase-js');
 
 const app            = express();
 const PORT           = process.env.PORT || 3000;
-const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY || '';
-const SUPABASE_URL   = process.env.SUPABASE_URL        || '';
+const GOOGLE_API_KEY = process.env.GOOGLE_MAPS_API_KEY  || '';
+const SUPABASE_URL   = process.env.SUPABASE_URL         || '';
 const SUPABASE_KEY   = process.env.SUPABASE_SERVICE_KEY || '';
+const JWT_SECRET     = process.env.JWT_SECRET           || 'bleaks-crm-secret';
 
 const supabase = SUPABASE_URL && SUPABASE_KEY
   ? createClient(SUPABASE_URL, SUPABASE_KEY, { auth: { persistSession: false } })
@@ -21,6 +24,64 @@ app.use(express.static(path.join(__dirname, 'dist')));
 app.get(/^(?!\/api).*/, (_req, res, next) => {
   const idx = path.join(__dirname, 'dist', 'index.html');
   if (fs.existsSync(idx)) res.sendFile(idx); else next();
+});
+
+// ── JWT MIDDLEWARE ────────────────────────────────────────────────────────────
+function requireAuth(req, res, next) {
+  const header = req.headers.authorization || '';
+  const token  = header.startsWith('Bearer ') ? header.slice(7) : '';
+  if (!token) return res.status(401).json({ error: 'No autorizado' });
+  try {
+    req.user = jwt.verify(token, JWT_SECRET);
+    next();
+  } catch {
+    res.status(401).json({ error: 'Sesión expirada, inicia sesión de nuevo' });
+  }
+}
+
+// ── AUTH ─────────────────────────────────────────────────────────────────────
+
+// Estado: ¿hay usuarios registrados?
+app.get('/api/auth/status', async (_req, res) => {
+  if (!supabase) return res.json({ hasUsers: false });
+  const { data } = await supabase.from('users').select('id').limit(1);
+  res.json({ hasUsers: (data || []).length > 0 });
+});
+
+// Primer acceso — crea el usuario admin (solo funciona si no hay ninguno)
+app.post('/api/auth/setup', async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
+  if (password.length < 6)    return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+
+  const { data: existing } = await supabase.from('users').select('id').limit(1);
+  if ((existing || []).length > 0) return res.status(403).json({ error: 'Ya existe una cuenta de administrador' });
+
+  const hash = await bcrypt.hash(password, 12);
+  const { error } = await supabase.from('users').insert({ username, password_hash: hash });
+  if (error) return res.status(500).json({ error: error.message });
+
+  const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, username });
+});
+
+// Login
+app.post('/api/auth/login', async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { username, password } = req.body;
+  if (!username || !password) return res.status(400).json({ error: 'Usuario y contraseña requeridos' });
+
+  const { data: users } = await supabase
+    .from('users').select('*').eq('username', username).limit(1);
+  const user = users?.[0];
+  if (!user) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+
+  const valid = await bcrypt.compare(password, user.password_hash);
+  if (!valid) return res.status(401).json({ error: 'Usuario o contraseña incorrectos' });
+
+  const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
+  res.json({ token, username: user.username });
 });
 
 // ── HEALTH ───────────────────────────────────────────────────────────────────
@@ -70,7 +131,7 @@ function fromRows(rows = []) {
 }
 
 // ── DATOS — lectura ───────────────────────────────────────────────────────────
-app.get('/api/data', async (_req, res) => {
+app.get('/api/data', requireAuth, async (_req, res) => {
   if (!supabase) {
     return res.status(503).json({ error: 'Supabase no configurado. Añade SUPABASE_URL y SUPABASE_SERVICE_KEY en .env' });
   }
@@ -85,7 +146,7 @@ app.get('/api/data', async (_req, res) => {
 });
 
 // ── DATOS — escritura (sincronización completa) ───────────────────────────────
-app.post('/api/data', async (req, res) => {
+app.post('/api/data', requireAuth, async (req, res) => {
   if (!supabase) {
     return res.status(503).json({ error: 'Supabase no configurado' });
   }
@@ -250,7 +311,7 @@ const PLACES_FIELD_MASK = [
   'places.location',
 ].join(',');
 
-app.post('/api/search', async (req, res) => {
+app.post('/api/search', requireAuth, async (req, res) => {
   if (!GOOGLE_API_KEY) {
     return res.status(400).json({
       error: 'GOOGLE_MAPS_API_KEY no configurado. Añádela en el fichero .env',

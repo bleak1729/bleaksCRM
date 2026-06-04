@@ -54,6 +54,16 @@ CREATE INDEX IF NOT EXISTS idx_leads_source   ON leads(source);
 -- Si en el futuro añades autenticación de usuarios, actívala aquí.
 ALTER TABLE leads DISABLE ROW LEVEL SECURITY;
 
+-- ── Tabla de usuarios (contraseñas encriptadas con bcrypt) ──────────
+CREATE TABLE IF NOT EXISTS users (
+  id            UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  username      TEXT        UNIQUE NOT NULL,
+  password_hash TEXT        NOT NULL,
+  created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+
+ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+
 -- ── Vista útil para análisis ──────────────────────────────────────
 CREATE OR REPLACE VIEW leads_summary AS
 SELECT

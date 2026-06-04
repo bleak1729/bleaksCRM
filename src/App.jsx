@@ -5,7 +5,8 @@ import KPIStrip      from './components/KPIStrip.jsx'
 import LeadTable     from './components/LeadTable.tsx'
 import LeadEditModal from './components/LeadEditModal.tsx'
 import Dashboard     from './components/Dashboard.tsx'
-import { getHealth, loadData, saveData, startSearch } from './api.js'
+import Login         from './components/Login.tsx'
+import { getHealth, loadData, saveData, startSearch, getToken, clearToken } from './api.js'
 
 
 // Inicializa el tema desde localStorage (evita flash antes del primer render)
@@ -15,6 +16,23 @@ const getInitialTheme = () => {
 }
 
 export default function App() {
+  // ── Auth ───────────────────────────────────────────────────────
+  const [authUser, setAuthUser] = useState(() => {
+    // Si hay token guardado, lo consideramos autenticado hasta que el servidor diga lo contrario
+    return getToken() ? localStorage.getItem('bleaks-crm-user') || '' : null
+  })
+
+  const handleLogin = (username) => {
+    localStorage.setItem('bleaks-crm-user', username)
+    setAuthUser(username)
+  }
+
+  const handleLogout = () => {
+    clearToken()
+    localStorage.removeItem('bleaks-crm-user')
+    setAuthUser(null)
+  }
+
   // ── State ─────────────────────────────────────────────────────
   const [leads,     setLeads]     = useState([])
   const [activeNav, setActiveNav] = useState('busqueda')
@@ -209,6 +227,8 @@ export default function App() {
   }, [persist, showToast])
 
   // ── Render ─────────────────────────────────────────────────────
+  if (!authUser) return <Login onSuccess={handleLogin} />
+
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
@@ -224,6 +244,8 @@ export default function App() {
         onImport={importData}
         activeNav={activeNav}
         onNavChange={setActiveNav}
+        username={authUser}
+        onLogout={handleLogout}
       />
 
       {/* ── CONTENIDO PRINCIPAL ─────────────────────────────────── */}

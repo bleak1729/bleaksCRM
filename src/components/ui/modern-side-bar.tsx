@@ -23,6 +23,8 @@ interface SidebarProps {
   onImport:      (e: React.ChangeEvent<HTMLInputElement>) => void;
   activeNav:     string;
   onNavChange:   (id: string) => void;
+  username?:     string;
+  onLogout?:     () => void;
   className?:    string;
 }
 
@@ -181,6 +183,7 @@ export function Sidebar({
   health, theme, onToggleTheme, leads,
   onSave, onExportCSV, onExportJSON, onImport,
   activeNav, onNavChange,
+  username, onLogout,
   className = '',
 }: SidebarProps) {
   const [isOpen,      setIsOpen]      = useState(false);
@@ -399,20 +402,21 @@ export function Sidebar({
           {!isCollapsed ? (
             <>
               <div className="sb-user-card mb-2">
-                <div className="sb-avatar">CD</div>
+                <div className="sb-avatar">{username ? username[0].toUpperCase() : 'U'}</div>
                 <div className="min-w-0">
-                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--txt)' }}>Comercial</div>
+                  <div style={{ fontSize: '13px', fontWeight: 600, color: 'var(--txt)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{username || 'Usuario'}</div>
                   <div style={{ fontSize: '11px', color: 'var(--txt3)' }}>{leads.length} leads activos</div>
                 </div>
               </div>
               <button
+                onClick={onLogout}
                 className="w-full flex items-center justify-center gap-1.5 font-semibold"
                 style={{ color: 'var(--danger)', border: '1px solid var(--bor2)', borderRadius: 'var(--r2)', padding: '8px 12px', fontSize: '13px', background: 'transparent', cursor: 'pointer', transition: 'background .15s' }}
                 onMouseEnter={e => { e.currentTarget.style.background = 'var(--danger-bg)'; e.currentTarget.style.borderColor = 'transparent' }}
                 onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.borderColor = 'var(--bor2)' }}
               >
                 <LogOut size={13}/>
-                Logout
+                Cerrar sesión
               </button>
             </>
           ) : (
