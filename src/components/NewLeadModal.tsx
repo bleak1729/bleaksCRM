@@ -169,7 +169,6 @@ export default function NewLeadModal({ onSave, onClose }: Props) {
                 placeholder="C/ Ejemplo 1, Valladolid" style={{ fontFamily: 'var(--fb)' }} />
             </div>
           </div>
-        </div>
 
           {/* Botón analizar + resultados */}
           <Separator />
@@ -186,11 +185,10 @@ export default function NewLeadModal({ onSave, onClose }: Props) {
               >
                 {analyzing
                   ? <><Loader2 size={12} className="animate-spin" /> Analizando...</>
-                  : <><Sparkles size={12} /> {analyzed ? 'Reanálizar' : 'Analizar digitalmente'}</>
+                  : <><Sparkles size={12} /> {analyzed ? 'Reanalizar' : 'Analizar digitalmente'}</>
                 }
               </Button>
             </div>
-
             {analyzed && (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                 {flaws.length > 0 && (
