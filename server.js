@@ -417,27 +417,38 @@ app.post('/api/search', requireAuth, async (req, res) => {
         for (let i = 0; i < nearbyTypes.length; i += CHUNK)
           chunks.push(nearbyTypes.slice(i, i + CHUNK));
 
-        const nearbyResults = await Promise.all(chunks.map(async (types) => {
-          const r = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
-            method:  'POST',
-            headers: {
-              'Content-Type':     'application/json',
-              'X-Goog-Api-Key':   GOOGLE_API_KEY,
-              'X-Goog-FieldMask': PLACES_FIELD_MASK,
-            },
-            body: JSON.stringify({
-              includedTypes:      types,
-              maxResultCount:     20,
-              rankPreference:     'DISTANCE', // ← clave: por proximidad, no por popularidad
-              locationRestriction: {
-                circle: locationBias.circle, // Nearby Search sí acepta circle en locationRestriction
-              },
-            }),
-          });
-          if (!r.ok) return [];
-          const d = await r.json();
-          return d.places || [];
-        }));
+        const nearbyBase = {
+          maxResultCount:      20,
+          rankPreference:      'DISTANCE',
+          locationRestriction: { circle: locationBias.circle },
+        };
+        const placesHeaders = {
+          'Content-Type':     'application/json',
+          'X-Goog-Api-Key':   GOOGLE_API_KEY,
+          'X-Goog-FieldMask': PLACES_FIELD_MASK,
+        };
+
+        const nearbyResults = await Promise.all([
+          // a) búsquedas por tipo específico del sector
+          ...chunks.map(async (types) => {
+            const r = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+              method: 'POST', headers: placesHeaders,
+              body: JSON.stringify({ ...nearbyBase, includedTypes: types }),
+            });
+            if (!r.ok) return [];
+            return (await r.json()).places || [];
+          }),
+          // b) catch-all SIN filtro de tipo — devuelve CUALQUIER negocio cercano
+          //    incluyendo los de baja visibilidad que no tienen tipo asignado
+          (async () => {
+            const r = await fetch('https://places.googleapis.com/v1/places:searchNearby', {
+              method: 'POST', headers: placesHeaders,
+              body: JSON.stringify(nearbyBase),   // sin includedTypes
+            });
+            if (!r.ok) return [];
+            return (await r.json()).places || [];
+          })(),
+        ]);
 
         nearbyPlaces = nearbyResults.flat();
       } catch (_) { /* silencioso si falla nearby */ }

@@ -6,6 +6,7 @@ import LeadTable     from './components/LeadTable.tsx'
 import LeadEditModal from './components/LeadEditModal.tsx'
 import Dashboard     from './components/Dashboard.tsx'
 import Login         from './components/Login.tsx'
+import NewLeadModal  from './components/NewLeadModal.tsx'
 import { getHealth, loadData, saveData, startSearch, getToken, clearToken } from './api.js'
 
 
@@ -41,7 +42,8 @@ export default function App() {
   const [notes,    setNotes]    = useState({})
   const [statuses, setStatuses] = useState({})
   const [filter,   setFilter]   = useState('all')
-  const [editModalLead, setEditModalLead] = useState(null) // Lead a editar
+  const [editModalLead,  setEditModalLead]  = useState(null)
+  const [showNewLead,    setShowNewLead]    = useState(false)
   const [health,        setHealth]       = useState(null)
   const [toast,       setToast]        = useState(null)
   const [search,      setSearch]       = useState({ loading: false, status: '', color: '' })
@@ -269,6 +271,7 @@ export default function App() {
               statuses={statuses}
               filter={filter}
               onFilter={setFilter}
+              onNewLead={() => setShowNewLead(true)}
               onEdit={lead => setEditModalLead(lead)}
               onDelete={id => {
                 setLeads(prev => { const next = prev.filter(l => l.id !== id); persist({ leads: next }); return next })
@@ -278,6 +281,17 @@ export default function App() {
           </>
         )}
       </div>
+
+      {/* ── MODAL NUEVO LEAD MANUAL ─────────────────────────────── */}
+      {showNewLead && (
+        <NewLeadModal
+          onSave={lead => {
+            setLeads(prev => { const next = [lead, ...prev]; persist({ leads: next }); return next })
+            showToast('Lead añadido manualmente')
+          }}
+          onClose={() => setShowNewLead(false)}
+        />
+      )}
 
       {/* ── MODAL DE EDICIÓN DE LEAD ────────────────────────────── */}
       {editModalLead && (

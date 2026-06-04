@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Phone, Globe, MapPin } from 'lucide-react'
+import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Phone, Globe, MapPin, Plus } from 'lucide-react'
 import { Badge }         from '@/components/ui/badge'
 import { Button }        from '@/components/ui/button'
 import ConfirmDialog     from './ConfirmDialog'
@@ -17,12 +17,13 @@ interface Lead {
   flaws: string[]; saas: string[]; source: string; [k: string]: unknown
 }
 interface Props {
-  leads:     Lead[]
-  statuses:  Record<string, string>
-  filter:    string
-  onFilter:  (v: string) => void
-  onEdit:    (lead: Lead) => void
-  onDelete?: (id: string) => void
+  leads:      Lead[]
+  statuses:   Record<string, string>
+  filter:     string
+  onFilter:   (v: string) => void
+  onNewLead?: () => void
+  onEdit:     (lead: Lead) => void
+  onDelete?:  (id: string) => void
 }
 
 const FILTER_OPTIONS = [
@@ -53,7 +54,7 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
     : <ArrowDown size={12} className="ml-1 inline" style={{ color: 'var(--ac)' }}/>
 }
 
-export default function LeadTable({ leads, statuses, filter, onFilter, onEdit, onDelete }: Props) {
+export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead, onEdit, onDelete }: Props) {
   const [search,      setSearch]      = useState('')
   const [sortCol,     setSortCol]     = useState<SortCol>('name')
   const [sortDir,     setSortDir]     = useState<SortDir>('asc')
@@ -142,6 +143,16 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onEdit, o
         <span className="results-count" style={{ fontFamily: 'var(--fb)' }}>
           {sorted.length} lead{sorted.length !== 1 ? 's' : ''} encontrados
         </span>
+
+        {onNewLead && (
+          <Button
+            variant="ghost" size="sm" shape="square"
+            onClick={onNewLead}
+            style={{ fontFamily: 'var(--fd)', fontWeight: 600, background: 'var(--ac)', color: '#fff', border: '1px solid var(--ac)', marginLeft: 8, whiteSpace: 'nowrap' }}
+          >
+            <Plus size={14} /> Nuevo lead
+          </Button>
+        )}
       </div>
 
       {/* Table container */}
