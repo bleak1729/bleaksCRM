@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import {
   Users, TrendingUp, Phone, Globe, Mail, Star,
   AlertTriangle, Zap, Target, CheckCircle2, Clock,
-  XCircle, ArrowRight, BarChart3, MapPin,
+  XCircle, ArrowRight, BarChart3, MapPin, Building2, Euro,
 } from 'lucide-react'
 import { Badge }     from '@/components/ui/badge'
 import LeadsMap      from './LeadsMap'
@@ -15,10 +15,12 @@ interface Lead {
   [k: string]: unknown
 }
 interface ContactState { phone?: { done: boolean }; email?: { done: boolean }; visit?: { done: boolean } }
+interface Customer { id: string; status: string; monthly_value: number; [k: string]: unknown }
 interface Props {
   leads:      Lead[]
   statuses:   Record<string, string>
   contacts:   Record<string, ContactState>
+  customers?: Customer[]
   onNavigate: (id: string) => void
 }
 
