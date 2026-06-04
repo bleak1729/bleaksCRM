@@ -1,10 +1,10 @@
 "use client";
 import React, { useState, useEffect, useRef } from 'react';
 import {
-  LayoutDashboard, Users, Upload, Sun, Moon,
-  FileJson, TableProperties, ChevronLeft, ChevronRight,
+  LayoutDashboard, Users, Sun, Moon,
+  ChevronLeft, ChevronRight,
   Menu, X, LogOut, Wifi, WifiOff, Search, Settings,
-  ChevronDown, Zap, Building2,
+  ChevronDown, Building2,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
