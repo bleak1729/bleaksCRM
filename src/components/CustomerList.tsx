@@ -278,6 +278,9 @@ export default function CustomerList({ customers, projects, customerContacts, in
         <CustomerModal
           customer={editCustomer}
           projects={projects}
+          customerContacts={customerContacts}
+          invoices={invoices}
+          documents={documents}
           onSave={handleSave}
           onClose={() => { setShowModal(false); setEditCustomer(null) }}
           onViewLead={onViewLead}
@@ -285,6 +288,12 @@ export default function CustomerList({ customers, projects, customerContacts, in
             setShowModal(false)
             setEditProject({ customer_id: id, name: '', description: '', status: 'activo', value: 0, start_date: null, end_date: null })
           }}
+          onSaveContact={onSaveContact}
+          onDeleteContact={onDeleteContact}
+          onSaveInvoice={onSaveInvoice}
+          onDeleteInvoice={onDeleteInvoice}
+          onSaveDocument={onSaveDocument}
+          onDeleteDocument={onDeleteDocument}
         />
       )}
 
