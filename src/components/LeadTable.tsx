@@ -284,6 +284,20 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
 
           </div>
         )}
+
+        <span className="results-count" style={{ fontFamily: 'var(--fb)' }}>
+          {sorted.length} lead{sorted.length !== 1 ? 's' : ''} encontrados
+        </span>
+
+        {onNewLead && (
+          <Button
+            variant="ghost" size="sm" shape="square"
+            onClick={onNewLead}
+            style={{ fontFamily: 'var(--fd)', fontWeight: 600, background: 'var(--ac)', color: '#fff', border: '1px solid var(--ac)', marginLeft: 8, whiteSpace: 'nowrap' }}
+          >
+            <Plus size={14} /> Nuevo lead
+          </Button>
+        )}
       </div>
 
       {/* Table container */}
