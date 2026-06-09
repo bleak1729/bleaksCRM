@@ -150,6 +150,6 @@ export default function DocumentModal({ document, onSave, onClose }: Props) {
         </div>
       </div>
     </div>,
-    document.body
+    window.document.body
   )
 }

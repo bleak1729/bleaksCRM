@@ -33,7 +33,7 @@ export interface Customer {
   created_at?:      string
 }
 
-interface Project { id: string; customer_id: string; name: string; status: string; value: number; drive_folder_url?: string }
+interface Project { id?: string; customer_id: string; name: string; status: string; value: number; drive_folder_url?: string }
 
 interface Props {
   customer:         Customer | null

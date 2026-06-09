@@ -141,6 +141,11 @@ function toRows({ leads = [], contacts = {}, notes = {}, statuses = {} }) {
     source:   l.source   || 'manual',
     lat:      l.lat      ?? null,
     lng:      l.lng      ?? null,
+    linkedin:  l.linkedin  || '',
+    instagram: l.instagram || '',
+    facebook:  l.facebook  || '',
+    twitter:   l.twitter   || '',
+    tiktok:    l.tiktok    || '',
     note:     notes[l.id]    || '',
     contacts: contacts[l.id] || {},
   }));

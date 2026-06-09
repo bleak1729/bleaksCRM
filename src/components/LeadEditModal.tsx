@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
-  X, Phone, Globe, MapPin, Tag, Zap, Star,
+  X, Phone, Globe, MapPin, Tag, Zap, Star, Share2,
   StickyNote, CheckCircle2, Mail, Users, CircleCheck, Sparkles, Loader2,
 } from 'lucide-react'
 import { analyzeLead } from '../api.js'
@@ -21,7 +21,9 @@ import { cn }         from '@/lib/utils'
 interface Lead {
   id: string; name: string; sector: string; loc: string; url: string;
   phone: string; email?: string; priority: string; rating: number | null; reviews: number;
-  flaws: string[]; saas: string[]; source: string; [k: string]: unknown
+  flaws: string[]; saas: string[]; source: string;
+  linkedin?: string; instagram?: string; facebook?: string; twitter?: string; tiktok?: string;
+  [k: string]: unknown
 }
 interface ContactMethod { done: boolean; date?: string }
 interface ContactState  { phone?: ContactMethod; email?: ContactMethod; visit?: ContactMethod }
@@ -68,6 +70,11 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
   const [curContact, setCurContact] = useState<ContactState>(contact)
   const [curFlaws,   setCurFlaws]   = useState<string[]>(lead.flaws || [])
   const [curSaas,    setCurSaas]    = useState<string[]>(lead.saas  || [])
+  const [linkedin,   setLinkedin]   = useState(lead.linkedin  ?? '')
+  const [instagram,  setInstagram]  = useState(lead.instagram ?? '')
+  const [facebook,   setFacebook]   = useState(lead.facebook  ?? '')
+  const [twitter,    setTwitter]    = useState(lead.twitter   ?? '')
+  const [tiktok,     setTiktok]     = useState(lead.tiktok    ?? '')
   const [analyzing,  setAnalyzing]  = useState(false)
   const firstRef = useRef<HTMLInputElement>(null)
 
@@ -109,7 +116,7 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
 
   const handleSave = () =>
     onSave(lead.id, {
-      lead:    { name, sector, loc, url, phone, email, priority, flaws: curFlaws, saas: curSaas },
+      lead:    { name, sector, loc, url, phone, email, priority, flaws: curFlaws, saas: curSaas, linkedin, instagram, facebook, twitter, tiktok },
       status:  curStatus,
       note:    curNote,
       contact: curContact,
@@ -254,6 +261,34 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
                     />
                   </div>
                 </div>
+              </div>
+            </div>
+
+            <Separator />
+
+            {/* § Redes sociales */}
+            <div>
+              <SectionTitle icon={<Share2 size={11} />}>Redes sociales</SectionTitle>
+              <div className="grid grid-cols-2 gap-3">
+                {([
+                  { id: 'edit-linkedin',  label: 'LinkedIn',    value: linkedin,  set: setLinkedin,  placeholder: 'linkedin.com/in/empresa' },
+                  { id: 'edit-instagram', label: 'Instagram',   value: instagram, set: setInstagram, placeholder: 'instagram.com/empresa' },
+                  { id: 'edit-facebook',  label: 'Facebook',    value: facebook,  set: setFacebook,  placeholder: 'facebook.com/empresa' },
+                  { id: 'edit-twitter',   label: 'Twitter / X', value: twitter,   set: setTwitter,   placeholder: 'x.com/empresa' },
+                  { id: 'edit-tiktok',    label: 'TikTok',      value: tiktok,    set: setTiktok,    placeholder: 'tiktok.com/@empresa' },
+                ] as const).map(({ id, label, value, set, placeholder }) => (
+                  <div key={id}>
+                    <Label htmlFor={id}>{label}</Label>
+                    <Input
+                      id={id}
+                      value={value}
+                      onChange={e => set(e.target.value)}
+                      placeholder={placeholder}
+                      className="mt-1.5"
+                      style={{ fontFamily: 'var(--fb)' }}
+                    />
+                  </div>
+                ))}
               </div>
             </div>
 

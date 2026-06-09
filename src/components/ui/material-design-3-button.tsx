@@ -380,7 +380,7 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     );
 
     if (asChild) {
-      const child = React.Children.only(children) as React.ReactElement;
+      const child = React.Children.only(children) as React.ReactElement<any>;
       return (
         <Slot ref={ref} {...componentProps}>
           {React.cloneElement(child, {
@@ -437,7 +437,7 @@ const SplitButton = React.forwardRef<HTMLDivElement, React.HTMLAttributes<HTMLDi
           const isLast = index === childrenArray.length - 1;
           return React.cloneElement(child as React.ReactElement<any>, {
             shape: isFirst ? "split-left" : isLast ? "split-right" : "square",
-            className: cn(child.props.className, "!h-auto self-stretch"),
+            className: cn((child as React.ReactElement<any>).props.className, "!h-auto self-stretch"),
           });
         })}
       </div>

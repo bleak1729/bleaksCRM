@@ -181,6 +181,13 @@ ALTER TABLE invoices ADD COLUMN IF NOT EXISTS line_items JSONB NOT NULL DEFAULT 
 ALTER TABLE customers ADD COLUMN IF NOT EXISTS drive_folder_url TEXT NOT NULL DEFAULT '';
 ALTER TABLE projects  ADD COLUMN IF NOT EXISTS drive_folder_url TEXT NOT NULL DEFAULT '';
 
+-- ── Redes sociales en leads ───────────────────────────────────────
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS linkedin  TEXT NOT NULL DEFAULT '';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS instagram TEXT NOT NULL DEFAULT '';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS facebook  TEXT NOT NULL DEFAULT '';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS twitter   TEXT NOT NULL DEFAULT '';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS tiktok    TEXT NOT NULL DEFAULT '';
+
 -- ── Vista útil para análisis ──────────────────────────────────────
 CREATE OR REPLACE VIEW leads_summary AS
 SELECT
