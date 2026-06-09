@@ -562,83 +562,107 @@ app.post('/api/search', requireAuth, async (req, res) => {
 app.post('/api/social', requireAuth, async (req, res) => {
   const { url = '', name = '' } = req.body;
 
-  // Patrones para detectar redes en el HTML
   const PATTERNS = [
-    { key: 'linkedin',  re: /https?:\/\/(?:www\.)?linkedin\.com\/(?:company|in|showcase)\/([^"'\s/>?#]+)/gi },
-    { key: 'instagram', re: /https?:\/\/(?:www\.)?instagram\.com\/([^"'\s/>?#]+)/gi },
-    { key: 'facebook',  re: /https?:\/\/(?:www\.)?facebook\.com\/(?!sharer|share|dialog|tr\b|plugins|legal)([^"'\s/>?#]+)/gi },
-    { key: 'twitter',   re: /https?:\/\/(?:www\.)?(?:twitter|x)\.com\/(?!intent|share|home|hashtag)([^"'\s/>?#]+)/gi },
-    { key: 'tiktok',    re: /https?:\/\/(?:www\.)?tiktok\.com\/@([^"'\s/>?#]+)/gi },
+    { key: 'linkedin',  re: /(https?:\/\/(?:www\.)?linkedin\.com\/(?:company|in|showcase)\/[^"'\s<>(){}\[\]]+)/gi },
+    { key: 'instagram', re: /(https?:\/\/(?:www\.)?instagram\.com\/(?!explore|p\/|reel\/)[^"'\s<>(){}\[\]]+)/gi },
+    { key: 'facebook',  re: /(https?:\/\/(?:www\.)?facebook\.com\/(?!sharer|share|dialog|tr[/?]|plugins|legal|photo)[^"'\s<>(){}\[\]]+)/gi },
+    { key: 'twitter',   re: /(https?:\/\/(?:www\.)?(?:twitter|x)\.com\/(?!intent|share|home|hashtag|i\/)[^"'\s<>(){}\[\]]+)/gi },
+    { key: 'tiktok',    re: /(https?:\/\/(?:www\.)?tiktok\.com\/@[^"'\s<>(){}\[\]]+)/gi },
   ];
 
-  const found = {};
-
-  // Si la URL del lead es válida, descargamos su HTML y buscamos social links
-  const rawUrl = url && !url.startsWith('Sin') ? url : null;
-  if (rawUrl) {
-    try {
-      const fullUrl = rawUrl.startsWith('http') ? rawUrl : 'https://' + rawUrl;
-      const controller = new AbortController();
-      const timeout = setTimeout(() => controller.abort(), 7000);
-      const r = await fetch(fullUrl, {
-        signal: controller.signal,
-        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BleaksCRM/1.0)' },
-        redirect: 'follow',
-      });
-      clearTimeout(timeout);
-      const html = await r.text();
-
-      for (const { key, re } of PATTERNS) {
-        if (found[key]) continue;
-        re.lastIndex = 0;
-        const m = re.exec(html);
-        if (m) {
-          // Limpiar trailing slash y parámetros
-          found[key] = m[0].replace(/[/?#]$/, '');
-        }
-      }
-    } catch (_) { /* silencioso — timeout o CORS */ }
+  function extractFromHtml(html) {
+    const result = {};
+    for (const { key, re } of PATTERNS) {
+      if (result[key]) continue;
+      re.lastIndex = 0;
+      const m = re.exec(html);
+      if (m) result[key] = m[1].replace(/[/"'\\].*$/, '').replace(/\/$/, '');
+    }
+    return result;
   }
 
-  // Si no encontramos todas las redes en la web, intentamos Google Places
-  // (algunos negocios de Google Maps tienen links de redes en sus datos)
-  if (GOOGLE_API_KEY && name) {
-    const missing = PATTERNS.filter(p => !found[p.key]);
-    if (missing.length > 0) {
-      try {
-        const q = encodeURIComponent(name);
-        const r = await fetch(
-          `https://places.googleapis.com/v1/places:searchText`,
-          {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'X-Goog-Api-Key': GOOGLE_API_KEY,
-              'X-Goog-FieldMask': 'places.websiteUri,places.socialMediaLinks',
-            },
-            body: JSON.stringify({ textQuery: name, maxResultCount: 1 }),
-          }
-        );
-        if (r.ok) {
-          const data = await r.json();
-          const place = data.places?.[0];
-          if (place?.socialMediaLinks) {
-            for (const link of place.socialMediaLinks) {
-              const u = link.uri || '';
-              for (const { key, re } of PATTERNS) {
-                if (!found[key]) {
-                  re.lastIndex = 0;
-                  if (re.exec(u)) found[key] = u.replace(/[/?#]$/, '');
-                }
-              }
-            }
-          }
-        }
-      } catch (_) { /* silencioso */ }
+  async function fetchHtml(pageUrl) {
+    const full = pageUrl.startsWith('http') ? pageUrl : 'https://' + pageUrl;
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    try {
+      const r = await fetch(full, {
+        signal: ctrl.signal,
+        redirect: 'follow',
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+          'Accept': 'text/html,application/xhtml+xml',
+          'Accept-Language': 'es-ES,es;q=0.9',
+        },
+      });
+      clearTimeout(t);
+      if (!r.ok) return null;
+      return await r.text();
+    } catch (_) { clearTimeout(t); return null; }
+  }
+
+  const found = {};
+  const rawUrl = url && !url.startsWith('Sin') ? url : null;
+
+  if (rawUrl) {
+    const baseUrl = rawUrl.startsWith('http') ? rawUrl : 'https://' + rawUrl;
+    const origin  = new URL(baseUrl).origin;
+
+    // Intentar home + páginas de contacto comunes
+    const pages = [baseUrl, `${origin}/contacto`, `${origin}/contact`, `${origin}/sobre-nosotros`, `${origin}/quienes-somos`];
+
+    for (const page of pages) {
+      const html = await fetchHtml(page);
+      if (!html) continue;
+      const partial = extractFromHtml(html);
+      for (const [k, v] of Object.entries(partial)) {
+        if (!found[k]) found[k] = v;
+      }
+      if (Object.keys(found).length === PATTERNS.length) break;
     }
   }
 
-  res.json(found);
+  // Búsqueda en Google Places si tenemos API key y falta alguna red
+  if (GOOGLE_API_KEY && name && Object.keys(found).length < PATTERNS.length) {
+    try {
+      const r = await fetch('https://places.googleapis.com/v1/places:searchText', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'X-Goog-Api-Key': GOOGLE_API_KEY,
+          'X-Goog-FieldMask': 'places.websiteUri',
+        },
+        body: JSON.stringify({ textQuery: name, maxResultCount: 1 }),
+      });
+      if (r.ok) {
+        const data = await r.json();
+        const siteUri = data.places?.[0]?.websiteUri;
+        // Si Google Maps tiene una web diferente a la que ya tenemos, escanearla también
+        if (siteUri && siteUri !== (rawUrl?.startsWith('http') ? rawUrl : 'https://' + rawUrl)) {
+          const html = await fetchHtml(siteUri);
+          if (html) {
+            const partial = extractFromHtml(html);
+            for (const [k, v] of Object.entries(partial)) {
+              if (!found[k]) found[k] = v;
+            }
+          }
+        }
+      }
+    } catch (_) { /* silencioso */ }
+  }
+
+  // Devolver también search URLs para las redes no encontradas
+  const searchUrls = {};
+  if (name) {
+    const q = encodeURIComponent(name);
+    if (!found.instagram) searchUrls.instagram = `https://www.google.com/search?q=${q}+site:instagram.com`;
+    if (!found.facebook)  searchUrls.facebook  = `https://www.google.com/search?q=${q}+site:facebook.com`;
+    if (!found.linkedin)  searchUrls.linkedin  = `https://www.google.com/search?q=${q}+site:linkedin.com`;
+    if (!found.twitter)   searchUrls.twitter   = `https://www.google.com/search?q=${q}+site:x.com+OR+site:twitter.com`;
+    if (!found.tiktok)    searchUrls.tiktok    = `https://www.google.com/search?q=${q}+site:tiktok.com`;
+  }
+
+  res.json({ found, searchUrls });
 });
 
 // ── ANÁLISIS DIGITAL DE LEAD ─────────────────────────────────────────────────

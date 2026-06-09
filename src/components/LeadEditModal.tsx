@@ -76,18 +76,21 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
   const [twitter,    setTwitter]    = useState(lead.twitter   ?? '')
   const [tiktok,     setTiktok]     = useState(lead.tiktok    ?? '')
   const [analyzing,    setAnalyzing]    = useState(false)
-  const [findingSocial, setFindingSocial] = useState(false)
+  const [findingSocial,  setFindingSocial]  = useState(false)
+  const [socialSearchUrls, setSocialSearchUrls] = useState<Record<string,string>>({})
   const firstRef = useRef<HTMLInputElement>(null)
 
   const handleFindSocial = async () => {
     setFindingSocial(true)
+    setSocialSearchUrls({})
     try {
-      const result = await findSocial({ url, name })
-      if (result.linkedin  && !linkedin)  setLinkedin(result.linkedin)
-      if (result.instagram && !instagram) setInstagram(result.instagram)
-      if (result.facebook  && !facebook)  setFacebook(result.facebook)
-      if (result.twitter   && !twitter)   setTwitter(result.twitter)
-      if (result.tiktok    && !tiktok)    setTiktok(result.tiktok)
+      const { found, searchUrls } = await findSocial({ url, name })
+      if (found.linkedin  && !linkedin)  setLinkedin(found.linkedin)
+      if (found.instagram && !instagram) setInstagram(found.instagram)
+      if (found.facebook  && !facebook)  setFacebook(found.facebook)
+      if (found.twitter   && !twitter)   setTwitter(found.twitter)
+      if (found.tiktok    && !tiktok)    setTiktok(found.tiktok)
+      setSocialSearchUrls(searchUrls || {})
     } catch { /* silencioso */ }
     finally { setFindingSocial(false) }
   }
@@ -297,14 +300,28 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
               </div>
               <div className="grid grid-cols-2 gap-3">
                 {([
-                  { id: 'edit-linkedin',  label: 'LinkedIn',    value: linkedin,  set: setLinkedin,  placeholder: 'linkedin.com/in/empresa' },
-                  { id: 'edit-instagram', label: 'Instagram',   value: instagram, set: setInstagram, placeholder: 'instagram.com/empresa' },
-                  { id: 'edit-facebook',  label: 'Facebook',    value: facebook,  set: setFacebook,  placeholder: 'facebook.com/empresa' },
-                  { id: 'edit-twitter',   label: 'Twitter / X', value: twitter,   set: setTwitter,   placeholder: 'x.com/empresa' },
-                  { id: 'edit-tiktok',    label: 'TikTok',      value: tiktok,    set: setTiktok,    placeholder: 'tiktok.com/@empresa' },
-                ] as const).map(({ id, label, value, set, placeholder }) => (
+                  { id: 'edit-linkedin',  key: 'linkedin',  label: 'LinkedIn',    value: linkedin,  set: setLinkedin,  placeholder: 'linkedin.com/in/empresa' },
+                  { id: 'edit-instagram', key: 'instagram', label: 'Instagram',   value: instagram, set: setInstagram, placeholder: 'instagram.com/empresa' },
+                  { id: 'edit-facebook',  key: 'facebook',  label: 'Facebook',    value: facebook,  set: setFacebook,  placeholder: 'facebook.com/empresa' },
+                  { id: 'edit-twitter',   key: 'twitter',   label: 'Twitter / X', value: twitter,   set: setTwitter,   placeholder: 'x.com/empresa' },
+                  { id: 'edit-tiktok',    key: 'tiktok',    label: 'TikTok',      value: tiktok,    set: setTiktok,    placeholder: 'tiktok.com/@empresa' },
+                ] as const).map(({ id, key, label, value, set, placeholder }) => (
                   <div key={id}>
-                    <Label htmlFor={id}>{label}</Label>
+                    <div className="flex items-center justify-between">
+                      <Label htmlFor={id}>{label}</Label>
+                      {!value && socialSearchUrls[key] && (
+                        <a
+                          href={socialSearchUrls[key]}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          style={{ fontSize: 10, color: 'var(--ac)', textDecoration: 'none', fontFamily: 'var(--fb)' }}
+                          onMouseEnter={e => (e.currentTarget.style.textDecoration = 'underline')}
+                          onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
+                        >
+                          Buscar →
+                        </a>
+                      )}
+                    </div>
                     <Input
                       id={id}
                       value={value}
