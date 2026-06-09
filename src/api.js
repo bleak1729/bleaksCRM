@@ -25,6 +25,19 @@ export const setupAccount = (username, password) =>
     body:    JSON.stringify({ username, password }),
   }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
 
+export const recoverPassword = (username, recoveryKey, newPassword) =>
+  fetch('/api/auth/recover', {
+    method:  'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body:    JSON.stringify({ username, recoveryKey, newPassword }),
+  }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
+export const regenerateRecoveryKey = () =>
+  fetch('/api/auth/recovery-key/regenerate', {
+    method:  'POST',
+    headers: authHeaders(),
+  }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
 export const saveToken   = token  => localStorage.setItem(TOKEN_KEY, token)
 export const clearToken  = ()     => localStorage.removeItem(TOKEN_KEY)
 export const getToken    = ()     => localStorage.getItem(TOKEN_KEY)

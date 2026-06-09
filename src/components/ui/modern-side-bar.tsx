@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Sun, Moon,
   ChevronLeft, ChevronRight,
   Menu, X, LogOut, Wifi, WifiOff, Search, Settings,
-  ChevronDown, Building2,
+  ChevronDown, Building2, KeyRound,
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
@@ -21,8 +21,9 @@ interface SidebarProps {
   onSave:        () => void;
   activeNav:     string;
   onNavChange:   (id: string) => void;
-  username?:     string;
-  onLogout?:     () => void;
+  username?:       string;
+  onLogout?:       () => void;
+  onRegenerateKey?: () => void;
   className?:    string;
 }
 
@@ -142,7 +143,7 @@ export function Sidebar({
   health, theme, onToggleTheme, leads,
   onSave,
   activeNav, onNavChange,
-  username, onLogout,
+  username, onLogout, onRegenerateKey,
   className = '',
 }: SidebarProps) {
   const [isOpen,      setIsOpen]      = useState(false);
@@ -356,6 +357,18 @@ export function Sidebar({
                 {theme === 'light' ? <Moon size={13}/> : <Sun size={13}/>}
                 {theme === 'light' ? 'Modo oscuro' : 'Modo claro'}
               </button>
+              {onRegenerateKey && (
+                <button
+                  onClick={onRegenerateKey}
+                  className="w-full flex items-center justify-center gap-1.5 font-semibold mb-2"
+                  style={{ color: 'var(--txt2)', border: '1px solid var(--bor2)', borderRadius: 'var(--r2)', padding: '8px 12px', fontSize: '13px', background: 'transparent', cursor: 'pointer', transition: 'background .15s' }}
+                  onMouseEnter={e => (e.currentTarget.style.background = 'var(--bg3)')}
+                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                >
+                  <KeyRound size={13}/>
+                  Clave de recuperación
+                </button>
+              )}
               <button
                 onClick={onLogout}
                 className="w-full flex items-center justify-center gap-1.5 font-semibold"

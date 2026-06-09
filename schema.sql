@@ -62,6 +62,8 @@ CREATE TABLE IF NOT EXISTS users (
   created_at    TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 
+ALTER TABLE users ADD COLUMN IF NOT EXISTS recovery_key_hash TEXT;
+
 ALTER TABLE users DISABLE ROW LEVEL SECURITY;
 
 -- ── Tabla de clientes (leads convertidos) ────────────────────────

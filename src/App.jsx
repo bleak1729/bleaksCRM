@@ -13,7 +13,8 @@ import { getHealth, loadData, saveData, startSearch, getToken, clearToken,
          loadProjects, createProject, updateProject, deleteProject,
          loadContacts, createContact, updateContact, deleteContact,
          loadInvoices, createInvoice, updateInvoice, deleteInvoice,
-         loadDocuments, createDocument, updateDocument, deleteDocument } from './api.js'
+         loadDocuments, createDocument, updateDocument, deleteDocument,
+         regenerateRecoveryKey } from './api.js'
 
 
 // Inicializa el tema desde localStorage (evita flash antes del primer render)
@@ -38,6 +39,16 @@ export default function App() {
     clearToken()
     localStorage.removeItem('bleaks-crm-user')
     setAuthUser(null)
+  }
+
+  const [recoveryModal, setRecoveryModal] = useState(null) // null | { key, copied }
+  const handleRegenerateKey = async () => {
+    try {
+      const { recoveryKey } = await regenerateRecoveryKey()
+      setRecoveryModal({ key: recoveryKey, copied: false })
+    } catch (err) {
+      alert('Error al generar la clave: ' + (err.message || err))
+    }
   }
 
   // ── State ─────────────────────────────────────────────────────
@@ -381,6 +392,47 @@ export default function App() {
   // ── Render ─────────────────────────────────────────────────────
   if (!authUser) return <Login onSuccess={handleLogin} />
 
+  const RecoveryKeyModal = recoveryModal && (
+    <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,.55)', zIndex: 2000, display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24 }}
+      onClick={() => setRecoveryModal(null)}>
+      <div style={{ background: 'var(--bg2)', border: '1px solid var(--bor2)', borderRadius: 'var(--r3)', maxWidth: 420, width: '100%', overflow: 'hidden', boxShadow: '0 20px 60px rgba(0,0,0,.3)' }}
+        onClick={e => e.stopPropagation()}>
+        <div style={{ background: 'var(--ac)', padding: '20px 24px', display: 'flex', alignItems: 'center', gap: 12 }}>
+          <span style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(255,255,255,.2)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            🔑
+          </span>
+          <div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#fff', fontFamily: 'var(--fd)' }}>Nueva clave de recuperación</div>
+            <div style={{ fontSize: 12, color: 'rgba(255,255,255,.7)', fontFamily: 'var(--fb)' }}>La clave anterior ya no sirve</div>
+          </div>
+        </div>
+        <div style={{ padding: '24px' }}>
+          <p style={{ fontSize: 13, color: 'var(--txt2)', fontFamily: 'var(--fb)', margin: '0 0 16px', lineHeight: 1.6 }}>
+            Guarda esta nueva clave en un lugar seguro. <strong style={{ color: 'var(--danger)' }}>Solo se muestra una vez.</strong>
+          </p>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, background: 'var(--bg3)', border: '1px solid var(--bor2)', borderRadius: 'var(--r2)', padding: '12px 14px', marginBottom: 20 }}>
+            <span style={{ fontFamily: 'monospace', fontSize: 18, fontWeight: 700, letterSpacing: '.15em', color: 'var(--txt)', flex: 1 }}>
+              {recoveryModal.key}
+            </span>
+            <button
+              onClick={() => {
+                navigator.clipboard.writeText(recoveryModal.key)
+                setRecoveryModal(m => ({ ...m, copied: true }))
+              }}
+              style={{ background: 'none', border: 'none', cursor: 'pointer', color: recoveryModal.copied ? 'var(--success, #15803d)' : 'var(--txt3)', display: 'flex', padding: 4, borderRadius: 4 }}
+            >
+              {recoveryModal.copied ? '✓' : '⎘'}
+            </button>
+          </div>
+          <button onClick={() => setRecoveryModal(null)}
+            style={{ width: '100%', padding: '10px', background: 'var(--ac)', color: '#fff', border: 'none', borderRadius: 'var(--r2)', fontFamily: 'var(--fd)', fontWeight: 700, fontSize: 14, cursor: 'pointer' }}>
+            He guardado la clave — Cerrar
+          </button>
+        </div>
+      </div>
+    </div>
+  )
+
   return (
     <div style={{ display: 'flex', height: '100vh', overflow: 'hidden' }}>
 
@@ -395,6 +447,7 @@ export default function App() {
         onNavChange={setActiveNav}
         username={authUser}
         onLogout={handleLogout}
+        onRegenerateKey={handleRegenerateKey}
       />
 
       {/* ── CONTENIDO PRINCIPAL ─────────────────────────────────── */}
@@ -487,6 +540,9 @@ export default function App() {
       {toast && (
         <div className="toast" role="status" aria-live="polite">{toast}</div>
       )}
+
+      {/* ── RECOVERY KEY MODAL ──────────────────────────────────── */}
+      {RecoveryKeyModal}
     </div>
   )
 }

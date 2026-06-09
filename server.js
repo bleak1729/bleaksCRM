@@ -4,6 +4,7 @@ require('dotenv').config();
 const express               = require('express');
 const path                  = require('path');
 const fs                    = require('fs');
+const crypto                = require('crypto');
 const bcrypt                = require('bcryptjs');
 const jwt                   = require('jsonwebtoken');
 const PDFDocument            = require('pdfkit');
@@ -74,6 +75,15 @@ app.get('/api/auth/status', async (_req, res) => {
   res.json({ hasUsers: (data || []).length > 0 });
 });
 
+// Genera una clave de recuperación legible: XXXX-XXXX-XXXX-XXXX
+function generateRecoveryKey() {
+  const chars = 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  const groups = Array.from({ length: 4 }, () =>
+    Array.from({ length: 4 }, () => chars[crypto.randomInt(chars.length)]).join('')
+  );
+  return groups.join('-');
+}
+
 // Primer acceso — crea el usuario admin (solo funciona si no hay ninguno)
 app.post('/api/auth/setup', async (req, res) => {
   if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
@@ -84,12 +94,15 @@ app.post('/api/auth/setup', async (req, res) => {
   const { data: existing } = await supabase.from('users').select('id').limit(1);
   if ((existing || []).length > 0) return res.status(403).json({ error: 'Ya existe una cuenta de administrador' });
 
-  const hash = await bcrypt.hash(password, 12);
-  const { error } = await supabase.from('users').insert({ username, password_hash: hash });
+  const recoveryKey  = generateRecoveryKey();
+  const hash         = await bcrypt.hash(password, 12);
+  const recoveryHash = await bcrypt.hash(recoveryKey, 10);
+
+  const { error } = await supabase.from('users').insert({ username, password_hash: hash, recovery_key_hash: recoveryHash });
   if (error) return res.status(500).json({ error: error.message });
 
   const token = jwt.sign({ username }, JWT_SECRET, { expiresIn: '7d' });
-  res.json({ token, username });
+  res.json({ token, username, recoveryKey });
 });
 
 // Login
@@ -108,6 +121,48 @@ app.post('/api/auth/login', async (req, res) => {
 
   const token = jwt.sign({ id: user.id, username: user.username }, JWT_SECRET, { expiresIn: '7d' });
   res.json({ token, username: user.username });
+});
+
+// Recuperar contraseña con clave de recuperación
+app.post('/api/auth/recover', async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { username, recoveryKey, newPassword } = req.body;
+  if (!username || !recoveryKey || !newPassword)
+    return res.status(400).json({ error: 'Faltan campos requeridos' });
+  if (newPassword.length < 6)
+    return res.status(400).json({ error: 'La contraseña debe tener al menos 6 caracteres' });
+
+  const { data: users } = await supabase
+    .from('users').select('*').eq('username', username).limit(1);
+  const user = users?.[0];
+  if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+  if (!user.recovery_key_hash)
+    return res.status(400).json({ error: 'Este usuario no tiene clave de recuperación configurada' });
+
+  const valid = await bcrypt.compare(recoveryKey.toUpperCase().replace(/\s/g, ''), user.recovery_key_hash);
+  if (!valid) return res.status(401).json({ error: 'Clave de recuperación incorrecta' });
+
+  const newHash = await bcrypt.hash(newPassword, 12);
+  const { error } = await supabase.from('users').update({ password_hash: newHash }).eq('id', user.id);
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json({ ok: true });
+});
+
+// Regenerar clave de recuperación (requiere auth)
+app.post('/api/auth/recovery-key/regenerate', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { data: users } = await supabase
+    .from('users').select('id').eq('username', req.user.username).limit(1);
+  const user = users?.[0];
+  if (!user) return res.status(404).json({ error: 'Usuario no encontrado' });
+
+  const recoveryKey  = generateRecoveryKey();
+  const recoveryHash = await bcrypt.hash(recoveryKey, 10);
+  const { error } = await supabase.from('users').update({ recovery_key_hash: recoveryHash }).eq('id', user.id);
+  if (error) return res.status(500).json({ error: error.message });
+
+  res.json({ recoveryKey });
 });
 
 // ── HEALTH ───────────────────────────────────────────────────────────────────
