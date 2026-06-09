@@ -6,6 +6,7 @@ export default function KPIStrip({ leads, statuses, contacts }) {
     return c.phone?.done || c.email?.done || c.visit?.done
   }).length
   const inProc  = leads.filter(l => (statuses[l.id] || 'sin contactar') === 'en proceso').length
+  const mockup  = leads.filter(l => (statuses[l.id] || 'sin contactar') === 'mockup').length
   const clients = leads.filter(l => (statuses[l.id] || 'sin contactar') === 'cliente').length
   const noTouch = leads.filter(l => (statuses[l.id] || 'sin contactar') === 'sin contactar').length
   const conv    = cont ? Math.round((clients / cont) * 100) : 0
@@ -15,6 +16,7 @@ export default function KPIStrip({ leads, statuses, contacts }) {
     { label: 'Sin Web',        value: noWeb,   sub: 'oportunidades críticas',valueColor: 'var(--danger)' },
     { label: 'Contactados',    value: cont,    sub: `${total ? Math.round((cont/total)*100) : 0}% del total`, valueColor: 'var(--txt)' },
     { label: 'En Proceso',     value: inProc,  sub: 'negociando',           valueColor: 'var(--ac)' },
+    { label: 'MockUp',         value: mockup,  sub: 'propuesta visual',      valueColor: 'var(--warning)' },
     { label: 'Clientes',       value: clients, sub: `conversión ${conv}%`,  valueColor: 'var(--success)' },
     { label: 'Sin Contactar',  value: noTouch, sub: 'pipeline disponible',  valueColor: 'var(--txt2)' },
   ]
