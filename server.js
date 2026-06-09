@@ -558,6 +558,89 @@ app.post('/api/search', requireAuth, async (req, res) => {
   }
 });
 
+// ── DETECCIÓN AUTOMÁTICA DE REDES SOCIALES ───────────────────────────────────
+app.post('/api/social', requireAuth, async (req, res) => {
+  const { url = '', name = '' } = req.body;
+
+  // Patrones para detectar redes en el HTML
+  const PATTERNS = [
+    { key: 'linkedin',  re: /https?:\/\/(?:www\.)?linkedin\.com\/(?:company|in|showcase)\/([^"'\s/>?#]+)/gi },
+    { key: 'instagram', re: /https?:\/\/(?:www\.)?instagram\.com\/([^"'\s/>?#]+)/gi },
+    { key: 'facebook',  re: /https?:\/\/(?:www\.)?facebook\.com\/(?!sharer|share|dialog|tr\b|plugins|legal)([^"'\s/>?#]+)/gi },
+    { key: 'twitter',   re: /https?:\/\/(?:www\.)?(?:twitter|x)\.com\/(?!intent|share|home|hashtag)([^"'\s/>?#]+)/gi },
+    { key: 'tiktok',    re: /https?:\/\/(?:www\.)?tiktok\.com\/@([^"'\s/>?#]+)/gi },
+  ];
+
+  const found = {};
+
+  // Si la URL del lead es válida, descargamos su HTML y buscamos social links
+  const rawUrl = url && !url.startsWith('Sin') ? url : null;
+  if (rawUrl) {
+    try {
+      const fullUrl = rawUrl.startsWith('http') ? rawUrl : 'https://' + rawUrl;
+      const controller = new AbortController();
+      const timeout = setTimeout(() => controller.abort(), 7000);
+      const r = await fetch(fullUrl, {
+        signal: controller.signal,
+        headers: { 'User-Agent': 'Mozilla/5.0 (compatible; BleaksCRM/1.0)' },
+        redirect: 'follow',
+      });
+      clearTimeout(timeout);
+      const html = await r.text();
+
+      for (const { key, re } of PATTERNS) {
+        if (found[key]) continue;
+        re.lastIndex = 0;
+        const m = re.exec(html);
+        if (m) {
+          // Limpiar trailing slash y parámetros
+          found[key] = m[0].replace(/[/?#]$/, '');
+        }
+      }
+    } catch (_) { /* silencioso — timeout o CORS */ }
+  }
+
+  // Si no encontramos todas las redes en la web, intentamos Google Places
+  // (algunos negocios de Google Maps tienen links de redes en sus datos)
+  if (GOOGLE_API_KEY && name) {
+    const missing = PATTERNS.filter(p => !found[p.key]);
+    if (missing.length > 0) {
+      try {
+        const q = encodeURIComponent(name);
+        const r = await fetch(
+          `https://places.googleapis.com/v1/places:searchText`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'X-Goog-Api-Key': GOOGLE_API_KEY,
+              'X-Goog-FieldMask': 'places.websiteUri,places.socialMediaLinks',
+            },
+            body: JSON.stringify({ textQuery: name, maxResultCount: 1 }),
+          }
+        );
+        if (r.ok) {
+          const data = await r.json();
+          const place = data.places?.[0];
+          if (place?.socialMediaLinks) {
+            for (const link of place.socialMediaLinks) {
+              const u = link.uri || '';
+              for (const { key, re } of PATTERNS) {
+                if (!found[key]) {
+                  re.lastIndex = 0;
+                  if (re.exec(u)) found[key] = u.replace(/[/?#]$/, '');
+                }
+              }
+            }
+          }
+        }
+      } catch (_) { /* silencioso */ }
+    }
+  }
+
+  res.json(found);
+});
+
 // ── ANÁLISIS DIGITAL DE LEAD ─────────────────────────────────────────────────
 app.post('/api/analyze', requireAuth, async (req, res) => {
   const { url = '', sector = '', phone = '', email = '' } = req.body;

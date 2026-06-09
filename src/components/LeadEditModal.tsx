@@ -4,7 +4,7 @@ import {
   X, Phone, Globe, MapPin, Tag, Zap, Star, Share2,
   StickyNote, CheckCircle2, Mail, Users, CircleCheck, Sparkles, Loader2,
 } from 'lucide-react'
-import { analyzeLead } from '../api.js'
+import { analyzeLead, findSocial } from '../api.js'
 import { Badge }      from '@/components/ui/badge'
 import { Button }     from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -75,8 +75,22 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
   const [facebook,   setFacebook]   = useState(lead.facebook  ?? '')
   const [twitter,    setTwitter]    = useState(lead.twitter   ?? '')
   const [tiktok,     setTiktok]     = useState(lead.tiktok    ?? '')
-  const [analyzing,  setAnalyzing]  = useState(false)
+  const [analyzing,    setAnalyzing]    = useState(false)
+  const [findingSocial, setFindingSocial] = useState(false)
   const firstRef = useRef<HTMLInputElement>(null)
+
+  const handleFindSocial = async () => {
+    setFindingSocial(true)
+    try {
+      const result = await findSocial({ url, name })
+      if (result.linkedin  && !linkedin)  setLinkedin(result.linkedin)
+      if (result.instagram && !instagram) setInstagram(result.instagram)
+      if (result.facebook  && !facebook)  setFacebook(result.facebook)
+      if (result.twitter   && !twitter)   setTwitter(result.twitter)
+      if (result.tiktok    && !tiktok)    setTiktok(result.tiktok)
+    } catch { /* silencioso */ }
+    finally { setFindingSocial(false) }
+  }
 
   const handleAnalyze = async () => {
     setAnalyzing(true)
@@ -268,7 +282,19 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
 
             {/* § Redes sociales */}
             <div>
-              <SectionTitle icon={<Share2 size={11} />}>Redes sociales</SectionTitle>
+              <div className="flex items-center justify-between mb-3">
+                <SectionTitle icon={<Share2 size={11} />}>Redes sociales</SectionTitle>
+                <Button
+                  type="button" variant="ghost" size="sm" shape="square"
+                  onClick={handleFindSocial} disabled={findingSocial || (!url || url.startsWith('Sin'))}
+                  style={{ fontFamily: 'var(--fd)', fontWeight: 600, fontSize: 11, background: 'var(--ac-tint)', color: 'var(--ac)', border: '1px solid var(--ac)', padding: '4px 10px', height: 'auto' }}
+                >
+                  {findingSocial
+                    ? <><Loader2 size={11} className="animate-spin" /> Buscando...</>
+                    : <><Sparkles size={11} /> Buscar redes</>
+                  }
+                </Button>
+              </div>
               <div className="grid grid-cols-2 gap-3">
                 {([
                   { id: 'edit-linkedin',  label: 'LinkedIn',    value: linkedin,  set: setLinkedin,  placeholder: 'linkedin.com/in/empresa' },

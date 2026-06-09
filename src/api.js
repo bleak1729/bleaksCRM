@@ -56,6 +56,14 @@ export const saveData  = data =>
     body:    JSON.stringify(data),
   }).then(r => r.json())
 
+// Detección automática de redes sociales desde la web del lead
+export const findSocial = ({ url, name }) =>
+  fetch('/api/social', {
+    method:  'POST',
+    headers: authHeaders(),
+    body:    JSON.stringify({ url, name }),
+  }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
 // Análisis digital de un lead (URL + sector + PageSpeed)
 export const analyzeLead = ({ url, sector, phone, email }) =>
   fetch('/api/analyze', {
