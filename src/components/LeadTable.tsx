@@ -1,8 +1,9 @@
 import { useMemo, useEffect, useRef, useState } from 'react'
-import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Phone, Globe, MapPin, Plus, TableProperties, FileJson, Upload, ChevronDown } from 'lucide-react'
-import { Badge }         from '@/components/ui/badge'
-import { Button }        from '@/components/ui/button'
-import ConfirmDialog     from './ConfirmDialog'
+import { Pencil, Trash2, ArrowUpDown, ArrowUp, ArrowDown, Phone, Globe, MapPin, Plus, TableProperties, FileJson, Upload, ChevronDown, LayoutTemplate } from 'lucide-react'
+import { Badge }             from '@/components/ui/badge'
+import { Button }            from '@/components/ui/button'
+import ConfirmDialog         from './ConfirmDialog'
+import LandingPromptModal    from './LandingPromptModal'
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from '@/components/ui/table'
@@ -128,6 +129,7 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
   const [confirmId,   setConfirmId]   = useState<string | null>(null)
   const [exportOpen,   setExportOpen]   = useState(false)
   const [pipelineOpen, setPipelineOpen] = useState(false)
+  const [landingLead,  setLandingLead]  = useState<Lead | null>(null)
   const importRef    = useRef<HTMLInputElement>(null)
   const exportRef    = useRef<HTMLDivElement>(null)
   const pipelineRef  = useRef<HTMLDivElement>(null)
@@ -562,6 +564,17 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
                   {/* Acciones */}
                   <TableCell style={{ padding: '16px 20px', textAlign: 'right' }}>
                     <div className="flex items-center justify-end gap-1">
+                      {/* Generar Landing (solo mockup) */}
+                      {status === 'mockup' && (
+                        <Button
+                          variant="ghost" size="icon-sm" shape="square"
+                          onClick={() => setLandingLead(lead)}
+                          title="Generar landing page"
+                          style={{ color: 'var(--ac)', border: '1px solid var(--ac)', background: 'var(--ac-tint)' }}
+                        >
+                          <LayoutTemplate size={13}/>
+                        </Button>
+                      )}
                       {/* Abrir en Google Maps */}
                       <a
                         href={
@@ -619,6 +632,13 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
         </Table>
       </div>
     </div>
+
+    {landingLead && (
+      <LandingPromptModal
+        lead={landingLead}
+        onClose={() => setLandingLead(null)}
+      />
+    )}
 
     {confirmLead && (
       <ConfirmDialog

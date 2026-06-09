@@ -665,6 +665,185 @@ app.post('/api/social', requireAuth, async (req, res) => {
   res.json({ found, searchUrls });
 });
 
+// ── GENERADOR DE PROMPT PARA LANDING PAGE ────────────────────────────────────
+const SECTOR_DESIGN = {
+  'Restaurante': { palette: 'cálida (naranja #F97316, crema #FEF3C7, marrón oscuro #1C0A00)', style: 'apetitoso y acogedor', sections: 'menú destacado, ambiente, horarios, reserva de mesa' },
+  'Bar':         { palette: 'cálida (naranja #F97316, crema #FEF3C7, marrón oscuro #1C0A00)', style: 'apetitoso y acogedor', sections: 'menú destacado, ambiente, horarios, reserva de mesa' },
+  'Cafetería':   { palette: 'cálida (café #6B3F1F, crema #FEF3C7, verde menta #D1FAE5)',     style: 'acogedor y artesanal', sections: 'carta, ambiente, horarios, pedido online' },
+  'Clínica':     { palette: 'limpia (azul médico #0EA5E9, blanco #FFFFFF, gris suave #F1F5F9)', style: 'profesional y de confianza', sections: 'especialidades, equipo médico, cómo pedir cita, seguros' },
+  'Dentista':    { palette: 'limpia (azul #0EA5E9, blanco #FFFFFF, verde menta #ECFDF5)',     style: 'clínico y amigable',      sections: 'tratamientos, tecnología, equipo, cita online' },
+  'Peluquería':  { palette: 'elegante (dorado #D97706, negro #111827, rosa nude #FDE8D8)',    style: 'moderno y estiloso',      sections: 'servicios, galería, equipo, reserva online' },
+  'Estética':    { palette: 'elegante (rosa #EC4899, dorado #D97706, blanco roto #FDF4FF)',   style: 'lujoso y femenino',       sections: 'tratamientos, antes/después, equipo, reserva' },
+  'Inmobiliaria':{ palette: 'premium (gris oscuro #1F2937, dorado #B45309, blanco #FFFFFF)',  style: 'lujoso y profesional',    sections: 'propiedades destacadas, servicios, equipo, tasación gratuita' },
+  'Fontanero':   { palette: 'sólida (azul #1D4ED8, naranja #F97316, gris #374151)',           style: 'confiable y urgente',     sections: 'servicios, emergencias 24h, zona de cobertura, presupuesto gratis' },
+  'Electricista':{ palette: 'sólida (amarillo #EAB308, azul oscuro #1E3A5F, gris #374151)',   style: 'técnico y de confianza',  sections: 'servicios, certificaciones, emergencias, presupuesto' },
+  'Reformas':    { palette: 'robusta (gris oscuro #374151, naranja #F97316, blanco #FFFFFF)', style: 'sólido y profesional',    sections: 'servicios, proyectos realizados, materiales, presupuesto gratis' },
+  'Gimnasio':    { palette: 'energética (rojo #DC2626, negro #111827, gris #374151)',         style: 'enérgico y motivador',    sections: 'clases, tarifas, instalaciones, primer mes gratis' },
+  'Abogado':     { palette: 'seria (azul marino #1E3A5F, dorado #D97706, blanco #FFFFFF)',    style: 'serio y de autoridad',    sections: 'áreas de práctica, equipo, casos de éxito, consulta gratuita' },
+  'Autoescuela': { palette: 'moderna (azul #2563EB, naranja #F97316, blanco #FFFFFF)',        style: 'dinámico y claro',        sections: 'cursos, precios, método, apúntate ahora' },
+};
+
+function getSectorDesign(sector) {
+  const key = Object.keys(SECTOR_DESIGN).find(k => sector?.toLowerCase().includes(k.toLowerCase()));
+  return SECTOR_DESIGN[key] || {
+    palette: 'moderna y profesional (azul oscuro #1E3A5F, acento #2563EB, blanco #FFFFFF)',
+    style: 'profesional y orientado a conversión',
+    sections: 'servicios principales, ventajas competitivas, zona de cobertura, contacto',
+  };
+}
+
+app.post('/api/landing/prompt', requireAuth, async (req, res) => {
+  if (!supabase) return res.status(503).json({ error: 'Supabase no configurado' });
+  const { leadId } = req.body;
+  if (!leadId) return res.status(400).json({ error: 'leadId requerido' });
+
+  // 1. Obtener datos del lead
+  const { data: rows, error } = await supabase
+    .from('leads')
+    .select('*')
+    .eq('id', leadId)
+    .limit(1);
+  if (error || !rows?.length) return res.status(404).json({ error: 'Lead no encontrado' });
+  const lead = rows[0];
+
+  // 2. Re-escanear redes sociales si están vacías
+  const socials = {
+    linkedin:  lead.linkedin  || '',
+    instagram: lead.instagram || '',
+    facebook:  lead.facebook  || '',
+    twitter:   lead.twitter   || '',
+    tiktok:    lead.tiktok    || '',
+  };
+
+  const hasSomeSocial = Object.values(socials).some(Boolean);
+  if (!hasSomeSocial && lead.url && !lead.url.startsWith('Sin')) {
+    try {
+      const PATTERNS = [
+        { key: 'linkedin',  re: /(https?:\/\/(?:www\.)?linkedin\.com\/(?:company|in|showcase)\/[^"'\s<>(){}\[\]]+)/gi },
+        { key: 'instagram', re: /(https?:\/\/(?:www\.)?instagram\.com\/(?!explore|p\/|reel\/)[^"'\s<>(){}\[\]]+)/gi },
+        { key: 'facebook',  re: /(https?:\/\/(?:www\.)?facebook\.com\/(?!sharer|share|dialog|tr[/?]|plugins|legal|photo)[^"'\s<>(){}\[\]]+)/gi },
+        { key: 'twitter',   re: /(https?:\/\/(?:www\.)?(?:twitter|x)\.com\/(?!intent|share|home|hashtag|i\/)[^"'\s<>(){}\[\]]+)/gi },
+        { key: 'tiktok',    re: /(https?:\/\/(?:www\.)?tiktok\.com\/@[^"'\s<>(){}\[\]]+)/gi },
+      ];
+      const baseUrl = lead.url.startsWith('http') ? lead.url : 'https://' + lead.url;
+      const origin  = new URL(baseUrl).origin;
+      for (const page of [baseUrl, `${origin}/contacto`, `${origin}/contact`]) {
+        try {
+          const ctrl = new AbortController();
+          const t = setTimeout(() => ctrl.abort(), 5000);
+          const r = await fetch(page, { signal: ctrl.signal, redirect: 'follow', headers: { 'User-Agent': 'Mozilla/5.0' } });
+          clearTimeout(t);
+          if (!r.ok) continue;
+          const html = await r.text();
+          for (const { key, re } of PATTERNS) {
+            if (!socials[key]) {
+              re.lastIndex = 0;
+              const m = re.exec(html);
+              if (m) socials[key] = m[1].replace(/[/"'\\].*$/, '').replace(/\/$/, '');
+            }
+          }
+        } catch (_) { /* silencioso */ }
+      }
+    } catch (_) { /* silencioso */ }
+  }
+
+  // 3. Construir el prompt
+  const design  = getSectorDesign(lead.sector);
+  const hasWeb  = lead.url && !lead.url.startsWith('Sin');
+  const webInfo = hasWeb
+    ? `Tiene web en: ${lead.url} (puede estar desactualizada o con problemas)`
+    : 'NO tiene web propia actualmente';
+
+  const socialLines = [
+    socials.instagram && `- Instagram: ${socials.instagram}`,
+    socials.facebook  && `- Facebook: ${socials.facebook}`,
+    socials.linkedin  && `- LinkedIn: ${socials.linkedin}`,
+    socials.twitter   && `- Twitter/X: ${socials.twitter}`,
+    socials.tiktok    && `- TikTok: ${socials.tiktok}`,
+  ].filter(Boolean);
+
+  const flawLines = (lead.flaws || []).map(f => `- ${f}`).join('\n') || '- Sin análisis previo';
+  const saasLines = (lead.saas  || []).map(s => `- ${s}`).join('\n') || '- Sin análisis previo';
+
+  const ratingLine = lead.rating
+    ? `${lead.rating} ⭐ en Google (${lead.reviews} reseñas)`
+    : 'Sin valoración registrada';
+
+  const prompt = `Eres un diseñador web experto en negocios locales españoles. Genera una landing page completa, moderna e interactiva en un solo archivo HTML autocontenido para el siguiente negocio.
+
+════════════════════════════════════════
+DATOS DEL NEGOCIO
+════════════════════════════════════════
+Nombre:       ${lead.name}
+Sector:       ${lead.sector}
+Localización: ${lead.loc || 'España'}
+Web actual:   ${webInfo}
+Teléfono:     ${lead.phone || 'No disponible'}
+Email:        ${lead.email || 'No disponible'}
+Valoración:   ${ratingLine}
+
+════════════════════════════════════════
+PRESENCIA EN REDES SOCIALES
+════════════════════════════════════════
+${socialLines.length > 0 ? socialLines.join('\n') : 'Sin presencia en redes sociales detectada'}
+
+════════════════════════════════════════
+PROBLEMAS DIGITALES DETECTADOS
+(úsalos para construir el argumento de venta — la landing debe resolver estos problemas visualmente)
+════════════════════════════════════════
+${flawLines}
+
+════════════════════════════════════════
+OPORTUNIDADES IDENTIFICADAS
+(servicios/funcionalidades que el negocio necesita y que la landing debe comunicar)
+════════════════════════════════════════
+${saasLines}
+
+════════════════════════════════════════
+INSTRUCCIONES TÉCNICAS
+════════════════════════════════════════
+- HTML autocontenido en un solo archivo (sin dependencias externas salvo CDN)
+- Tailwind CSS via CDN (https://cdn.tailwindcss.com)
+- Animaciones de scroll con AOS via CDN o CSS/JS puro
+- 100% responsive — diseño mobile-first
+- Sin imágenes externas — usa gradientes CSS, emojis como iconos decorativos o SVG inline
+- Scroll suave entre secciones con anclas (#section)
+- Navbar fija con el nombre del negocio y CTA visible
+- Botón de WhatsApp/llamada flotante si hay teléfono disponible
+
+════════════════════════════════════════
+DISEÑO VISUAL — SECTOR: ${lead.sector.toUpperCase()}
+════════════════════════════════════════
+Paleta de colores: ${design.palette}
+Estilo visual:     ${design.style}
+Secciones clave del sector: ${design.sections}
+
+════════════════════════════════════════
+ESTRUCTURA DE SECCIONES (en este orden)
+════════════════════════════════════════
+1. HERO — Headline potente, subheadline con propuesta de valor, CTA principal ("Pide presupuesto" / "Reserva ahora" / según sector). Fondo con gradiente llamativo.
+2. EL PROBLEMA — Sección que muestra los problemas actuales del sector (basada en los fallos detectados) de forma empática. Estilo visual moderno con iconos.
+3. NUESTRA SOLUCIÓN — Cómo este negocio resuelve esos problemas. 3-4 cards con ventajas competitivas.
+4. SERVICIOS — Grid de los servicios principales con iconos SVG, descripción breve y precio orientativo si aplica.
+5. POR QUÉ ELEGIRNOS — Diferenciadores: ${lead.rating ? `${lead.rating}⭐ con ${lead.reviews} valoraciones en Google,` : ''} experiencia, profesionalidad, rapidez.
+6. REDES SOCIALES — ${socialLines.length > 0 ? 'Mostrar los perfiles detectados con iconos de las redes y links reales: ' + socialLines.map(l => l.replace('- ','')).join(' | ') : 'Sección de comunidad/redes aunque no tenga links (invitar a seguirles).'}
+7. CONTACTO — Formulario simple (nombre, teléfono, mensaje) + datos de contacto reales + mapa de ubicación placeholder.
+8. FOOTER — Logo/nombre, links a secciones, datos de contacto, copyright.
+
+════════════════════════════════════════
+COPY E IDIOMA
+════════════════════════════════════════
+- Español de España (tuteo o ustedeo según el sector: tuteo para hostelería/belleza/gym, ustedeo para clínicas/abogados/inmobiliaria)
+- Tono: ${design.style}
+- Copy orientado a conversión — cada sección debe terminar empujando al usuario hacia el CTA
+- Usar los problemas detectados como argumentos de venta reales, no genéricos
+- El nombre del negocio (${lead.name}) debe aparecer al menos 3 veces de forma natural
+
+Genera ÚNICAMENTE el código HTML completo. Sin explicaciones, sin markdown, sin comentarios fuera del HTML. El resultado debe poder guardarse como .html y abrirse directamente en el navegador.`;
+
+  res.json({ prompt, lead: { name: lead.name, sector: lead.sector, socials } });
+});
+
 // ── ANÁLISIS DIGITAL DE LEAD ─────────────────────────────────────────────────
 app.post('/api/analyze', requireAuth, async (req, res) => {
   const { url = '', sector = '', phone = '', email = '' } = req.body;

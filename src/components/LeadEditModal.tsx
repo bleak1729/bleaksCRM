@@ -1,10 +1,11 @@
 import { useState, useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
 import {
-  X, Phone, Globe, MapPin, Tag, Zap, Star, Share2,
+  X, Phone, Globe, MapPin, Tag, Zap, Star, Share2, LayoutTemplate,
   StickyNote, CheckCircle2, Mail, Users, CircleCheck, Sparkles, Loader2,
 } from 'lucide-react'
 import { analyzeLead, findSocial } from '../api.js'
+import LandingPromptModal from './LandingPromptModal'
 import { Badge }      from '@/components/ui/badge'
 import { Button }     from '@/components/ui/button'
 import { Card, CardContent } from '@/components/ui/card'
@@ -78,6 +79,7 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
   const [analyzing,    setAnalyzing]    = useState(false)
   const [findingSocial,  setFindingSocial]  = useState(false)
   const [socialSearchUrls, setSocialSearchUrls] = useState<Record<string,string>>({})
+  const [showLanding,    setShowLanding]    = useState(false)
   const firstRef = useRef<HTMLInputElement>(null)
 
   const handleFindSocial = async () => {
@@ -534,9 +536,28 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
                 <div>ID: {lead.id}</div>
                 <div>Fuente: {lead.source === 'apify' ? 'Google Maps (Apify)' : 'Manual'}</div>
               </div>
+
+              {/* Landing page */}
+              <div style={{ height: 1, background: 'var(--bor)', margin: '12px 0' }} />
+              <Button
+                type="button" variant="ghost" shape="square"
+                onClick={() => setShowLanding(true)}
+                className="w-full"
+                style={{ fontFamily: 'var(--fd)', fontWeight: 700, fontSize: 12, background: 'var(--ac)', color: '#fff', border: 'none', height: 36 }}
+              >
+                <LayoutTemplate size={13}/> Generar Landing Page
+              </Button>
             </div>
           </div>
         </div>
+
+        {/* ── Landing prompt modal ─────────────────────────────────── */}
+        {showLanding && (
+          <LandingPromptModal
+            lead={lead}
+            onClose={() => setShowLanding(false)}
+          />
+        )}
 
         {/* ── Footer ───────────────────────────────────────────── */}
         <div style={{ borderTop: '1px solid var(--bor2)', background: 'var(--bg3)' }}>

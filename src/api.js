@@ -56,6 +56,14 @@ export const saveData  = data =>
     body:    JSON.stringify(data),
   }).then(r => r.json())
 
+// Genera el prompt para landing page en Claude.ai
+export const generateLandingPrompt = (leadId) =>
+  fetch('/api/landing/prompt', {
+    method:  'POST',
+    headers: authHeaders(),
+    body:    JSON.stringify({ leadId }),
+  }).then(r => r.ok ? r.json() : r.json().then(e => Promise.reject(new Error(e.error))))
+
 // Detección automática de redes sociales desde la web del lead
 export const findSocial = ({ url, name }) =>
   fetch('/api/social', {
