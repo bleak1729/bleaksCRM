@@ -32,7 +32,7 @@ test('fromRows reconstruye el payload del frontend', () => {
 
 test('toRows ↔ fromRows es un viaje de ida y vuelta estable', () => {
   const original = {
-    leads:    [{ id: 'x', name: 'Óptica Luz', sector: 'Óptica', loc: '', url: '', phone: '', email: '', priority: 'high', rating: null, reviews: 0, flaws: [], saas: [], source: 'manual', lat: null, lng: null, linkedin: '', instagram: '', facebook: '', twitter: '', tiktok: '' }],
+    leads:    [{ id: 'x', name: 'Óptica Luz', sector: 'Óptica', loc: '', url: '', phone: '', email: '', priority: 'high', rating: null, reviews: 0, flaws: [], saas: [], source: 'manual', lat: null, lng: null, country: 'España', region: 'Castilla y León', city: 'Valladolid', linkedin: '', instagram: '', facebook: '', twitter: '', tiktok: '' }],
     statuses: { x: 'mockup' },
     notes:    { x: '' },
     contacts: { x: {} },
@@ -73,6 +73,24 @@ test('mapPlaces filtra cerrados, marca sin-web como prioridad alta y deduplica f
   assert.equal(conWeb.priority, 'med');
   assert.equal(conWeb.url, 'https://clinica.es');
   assert.equal(conWeb.sector, 'Salud - Dental');
+});
+
+test('mapPlaces sella cada lead con la geografía de la búsqueda', () => {
+  const [lead] = mapPlaces(
+    [{ displayName: { text: 'Café Andino' } }],
+    '',
+    { country: 'Perú', region: 'Lima', city: 'Miraflores' }
+  );
+  assert.equal(lead.country, 'Perú');
+  assert.equal(lead.region, 'Lima');
+  assert.equal(lead.city, 'Miraflores');
+});
+
+test('mapPlaces sin geo deja los campos vacíos (leads antiguos)', () => {
+  const [lead] = mapPlaces([{ displayName: { text: 'Bar Viejo' } }], '');
+  assert.equal(lead.country, '');
+  assert.equal(lead.region, '');
+  assert.equal(lead.city, '');
 });
 
 test('mapPlaces descarta webs que son redes sociales', () => {

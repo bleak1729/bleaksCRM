@@ -2,7 +2,7 @@
 
 import type {
   Customer, CustomerContact, DataPayload, DocumentItem,
-  Health, Invoice, Project, SearchResult,
+  Health, Invoice, Project, SearchParams, SearchResult,
 } from './types'
 
 const TOKEN_KEY = 'bleaks-crm-token'
@@ -71,7 +71,7 @@ export const saveData = (data: DataPayload) =>
   request<{ ok: boolean; deleted: number }>('/api/data', { method: 'POST', body: data })
 
 // Búsqueda síncrona — devuelve { leads, total, query } directamente
-export const startSearch = (body: { city: string; radius: number; sector: string }) =>
+export const startSearch = (body: SearchParams) =>
   request<SearchResult>('/api/search', { method: 'POST', body })
 
 // Genera el prompt para landing page en Claude.ai

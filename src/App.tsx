@@ -17,7 +17,7 @@ import { getHealth, loadData, saveData, startSearch, getToken, clearToken,
          regenerateRecoveryKey } from './api'
 import type { Lead, LeadContact, ContactsMap, NotesMap, StatusMap,
               Customer, Project, CustomerContact, Invoice, DocumentItem,
-              Health, SearchState } from './types'
+              Health, SearchParams, SearchState } from './types'
 
 interface LeadUpdates {
   lead?: Partial<Lead>
@@ -333,10 +333,10 @@ export default function App() {
   }, [showToast])
 
   // ── Google Maps search ────────────────────────────────────────
-  const runSearch = useCallback(async ({ city, radius, sector }: { city: string; radius: number; sector: string }) => {
+  const runSearch = useCallback(async (params: SearchParams) => {
     setSearch({ loading: true, status: 'Buscando en Google Maps...', color: 'var(--txt2)' })
     try {
-      const { leads: raw, total, query } = await startSearch({ city, radius, sector })
+      const { leads: raw, total, query } = await startSearch(params)
 
       const existing = new Set(leadsRef.current.map(l => l.name.toLowerCase()))
       const newLeads = (raw || []).filter(l => {
@@ -379,9 +379,10 @@ export default function App() {
         ? `"${s.replace(/"/g, '""')}"` : s
     }
     const prio: Record<string, string> = { high: 'Alta', med: 'Media', low: 'Baja' }
-    const headers = ['Nombre','Sector','Teléfono','Web','Dirección','Prioridad','Estado','Puntuación','Reseñas','Fallos','SaaS','Notas']
+    const headers = ['Nombre','Sector','Teléfono','Web','Dirección','País','Provincia','Ciudad','Prioridad','Estado','Puntuación','Reseñas','Fallos','SaaS','Notas']
     const rows = leads.map(l => [
       l.name, l.sector, l.phone || '', l.url, l.loc,
+      l.country || '', l.region || '', l.city || '',
       prio[l.priority || ''] || '', statuses[l.id] || 'sin contactar',
       l.rating || '', l.reviews || '',
       (l.flaws || []).join(' | '),

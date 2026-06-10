@@ -23,7 +23,12 @@ router.post('/', requireAuth, async (req, res) => {
     });
   }
 
-  const { city = 'Valladolid', radius = 10, sector = '' } = req.body;
+  const { country = 'España', region = '', city = '', radius = 10, sector = '' } = req.body;
+  if (!city.trim()) {
+    return res.status(400).json({ error: 'Indica una ciudad donde buscar' });
+  }
+  // "Ciudad, Provincia, País" — desambigua ciudades repetidas entre países
+  const placeLabel = [city, region, country].map(s => s.trim()).filter(Boolean).join(', ');
   const queries = SECTOR_QUERIES[sector] || SECTOR_QUERIES[''];
 
   try {
@@ -38,7 +43,7 @@ router.post('/', requireAuth, async (req, res) => {
           'X-Goog-Api-Key':   GOOGLE_API_KEY,
           'X-Goog-FieldMask': 'places.location',
         },
-        body: JSON.stringify({ textQuery: city + ', España', maxResultCount: 1 }),
+        body: JSON.stringify({ textQuery: placeLabel, maxResultCount: 1 }),
       });
       const cityData = await cityRes.json();
       const loc      = cityData.places?.[0]?.location;
@@ -59,9 +64,8 @@ router.post('/', requireAuth, async (req, res) => {
 
       for (let page = 0; page < 2; page++) {
         const body = {
-          textQuery:      q + ' en ' + city,
+          textQuery:      q + ' en ' + placeLabel,
           languageCode:   'es',
-          regionCode:     'ES',
           maxResultCount: 20,
         };
         if (locationBias) body.locationBias = locationBias;
@@ -151,8 +155,8 @@ router.post('/', requireAuth, async (req, res) => {
       return true;
     });
 
-    const leads = mapPlaces(allPlaces, sector);
-    const label = queries[0] + ' en ' + city;
+    const leads = mapPlaces(allPlaces, sector, { country, region, city });
+    const label = queries[0] + ' en ' + placeLabel;
 
     res.json({ leads, total: allPlaces.length, query: label });
 

@@ -16,6 +16,7 @@ interface Lead {
   id: string; name: string; sector: string; loc: string; url: string;
   phone: string; priority: string; rating: number | null; reviews: number;
   flaws: string[]; saas: string[]; source: string;
+  country?: string; region?: string; city?: string;
   linkedin?: string; instagram?: string; facebook?: string; twitter?: string; tiktok?: string;
   [k: string]: unknown
 }
@@ -132,6 +133,30 @@ function Col({ col, sortCol, sortDir, onSort, children }: { col: SortCol; sortCo
   )
 }
 
+function GeoSelect({ value, onChange, placeholder, options, disabled }: {
+  value: string; onChange: (v: string) => void; placeholder: string; options: string[]; disabled?: boolean
+}) {
+  return (
+    <select
+      value={value}
+      onChange={e => onChange(e.target.value)}
+      disabled={disabled}
+      aria-label={placeholder}
+      style={{
+        height: 32, padding: '0 8px', maxWidth: 150,
+        fontFamily: 'var(--fb)', fontSize: '13px',
+        background: 'var(--bg2)', color: value ? 'var(--ac)' : 'var(--txt2)',
+        border: '1px solid var(--bor2)', borderRadius: 'var(--r2)',
+        cursor: disabled ? 'not-allowed' : 'pointer', fontWeight: value ? 600 : 400,
+        opacity: disabled ? 0.5 : 1,
+      }}
+    >
+      <option value="">{placeholder}</option>
+      {options.map(o => <option key={o} value={o}>{o}</option>)}
+    </select>
+  )
+}
+
 function StaticHead({ children }: { children: React.ReactNode }) {
   return <TableHead style={HEAD_STYLE}>{children}</TableHead>
 }
@@ -144,6 +169,9 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
   const [exportOpen,   setExportOpen]   = useState(false)
   const [pipelineOpen, setPipelineOpen] = useState(false)
   const [landingLead,  setLandingLead]  = useState<Lead | null>(null)
+  const [geoCountry, setGeoCountry] = useState('')
+  const [geoRegion,  setGeoRegion]  = useState('')
+  const [geoCity,    setGeoCity]    = useState('')
   const importRef    = useRef<HTMLInputElement>(null)
   const exportRef    = useRef<HTMLDivElement>(null)
   const pipelineRef  = useRef<HTMLDivElement>(null)
@@ -172,12 +200,28 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
       ? leads.length
       : leads.filter(l => (statuses[l.id] || 'sin contactar') === id).length
 
+  // Opciones en cascada para el filtro demográfico (a partir de los leads)
+  const geoOptions = useMemo(() => {
+    const distinct = (vals: (string | undefined)[]) =>
+      [...new Set(vals.filter((v): v is string => !!v))].sort((a, b) => a.localeCompare(b, 'es'))
+    const countries = distinct(leads.map(l => l.country))
+    const inCountry = geoCountry ? leads.filter(l => l.country === geoCountry) : leads
+    const regions   = distinct(inCountry.map(l => l.region))
+    const inRegion  = geoRegion ? inCountry.filter(l => l.region === geoRegion) : inCountry
+    const cities    = distinct(inRegion.map(l => l.city))
+    return { countries, regions, cities }
+  }, [leads, geoCountry, geoRegion])
+
   const sorted = useMemo(() => {
     const term = search.toLowerCase()
     // Primero filtra por pipeline, luego por búsqueda de texto
-    const pipelined = filter === 'all'
+    let pipelined = filter === 'all'
       ? leads
       : leads.filter(l => (statuses[l.id] || 'sin contactar') === filter)
+    // Filtro demográfico
+    if (geoCountry) pipelined = pipelined.filter(l => l.country === geoCountry)
+    if (geoRegion)  pipelined = pipelined.filter(l => l.region === geoRegion)
+    if (geoCity)    pipelined = pipelined.filter(l => l.city === geoCity)
     const filtered = pipelined.filter(l =>
       l.name.toLowerCase().includes(term) ||
       l.sector.toLowerCase().includes(term) ||
@@ -194,7 +238,7 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
       if (av > bv) return sortDir === 'asc' ? 1 : -1
       return 0
     })
-  }, [leads, statuses, filter, search, sortCol, sortDir])
+  }, [leads, statuses, filter, geoCountry, geoRegion, geoCity, search, sortCol, sortDir])
 
   return (
     <>
@@ -277,6 +321,28 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
           value={search}
           onChange={e => setSearch(e.target.value)}
           spellCheck={false}
+        />
+
+        {/* ── Filtro demográfico (en cascada) ─────────────────── */}
+        <GeoSelect
+          value={geoCountry}
+          onChange={v => { setGeoCountry(v); setGeoRegion(''); setGeoCity('') }}
+          placeholder="País: todos"
+          options={geoOptions.countries}
+        />
+        <GeoSelect
+          value={geoRegion}
+          onChange={v => { setGeoRegion(v); setGeoCity('') }}
+          placeholder="Provincia: todas"
+          options={geoOptions.regions}
+          disabled={geoOptions.regions.length === 0}
+        />
+        <GeoSelect
+          value={geoCity}
+          onChange={setGeoCity}
+          placeholder="Ciudad: todas"
+          options={geoOptions.cities}
+          disabled={geoOptions.cities.length === 0}
         />
 
         {(onExportCSV || onExportJSON || onImport) && (

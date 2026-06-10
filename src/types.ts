@@ -16,6 +16,9 @@ export interface Lead {
   source: string
   lat?: number | null
   lng?: number | null
+  country?: string
+  region?: string
+  city?: string
   linkedin?: string
   instagram?: string
   facebook?: string
@@ -134,6 +137,14 @@ export interface SearchState {
   loading: boolean
   status: string
   color: string
+}
+
+export interface SearchParams {
+  country: string
+  region: string
+  city: string
+  radius: number
+  sector: string
 }
 
 export interface SearchResult {

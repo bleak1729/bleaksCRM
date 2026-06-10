@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Search, Loader2 } from 'lucide-react'
-import type { SearchState } from '../types'
+import type { SearchParams, SearchState } from '../types'
 
 const SECTORS = [
   { value: '',             label: 'Todos los sectores' },
@@ -19,19 +19,63 @@ const SECTORS = [
 
 interface SearchPanelProps {
   search: SearchState
-  onSearch: (params: { city: string; radius: number; sector: string }) => void
+  onSearch: (params: SearchParams) => void
 }
 
-export default function SearchPanel({ search, onSearch }: SearchPanelProps) {
-  const [city,   setCity]   = useState('Valladolid')
-  const [radius, setRadius] = useState('10')
-  const [sector, setSector] = useState('')
+const FIELD_FONT = { fontFamily: 'var(--fb)', fontSize: '14px' }
 
-  const handleSearch = () =>
-    onSearch({ city: city.trim() || 'Valladolid', radius: parseInt(radius) || 10, sector })
+export default function SearchPanel({ search, onSearch }: SearchPanelProps) {
+  const [country, setCountry] = useState('España')
+  const [region,  setRegion]  = useState('')
+  const [city,    setCity]    = useState('')
+  const [radius,  setRadius]  = useState('10')
+  const [sector,  setSector]  = useState('')
+  const [cityError, setCityError] = useState(false)
+
+  const handleSearch = () => {
+    if (!city.trim()) { setCityError(true); return }
+    setCityError(false)
+    onSearch({
+      country: country.trim() || 'España',
+      region:  region.trim(),
+      city:    city.trim(),
+      radius:  parseInt(radius) || 10,
+      sector,
+    })
+  }
 
   return (
     <section className="search-panel" aria-label="Buscar leads">
+      {/* País */}
+      <div className="field">
+        <label className="field-label" htmlFor="country-input">País</label>
+        <input
+          id="country-input"
+          className="field-input"
+          value={country}
+          onChange={e => setCountry(e.target.value)}
+          placeholder="Ej: España, México, Argentina..."
+          autoComplete="off"
+          spellCheck={false}
+          style={FIELD_FONT}
+        />
+      </div>
+
+      {/* Estado / Provincia */}
+      <div className="field">
+        <label className="field-label" htmlFor="region-input">Estado / Provincia</label>
+        <input
+          id="region-input"
+          className="field-input"
+          value={region}
+          onChange={e => setRegion(e.target.value)}
+          placeholder="Opcional — Ej: Castilla y León"
+          autoComplete="off"
+          spellCheck={false}
+          style={FIELD_FONT}
+        />
+      </div>
+
       {/* Ciudad */}
       <div className="field">
         <label className="field-label" htmlFor="city-input">Ciudad objetivo</label>
@@ -39,11 +83,12 @@ export default function SearchPanel({ search, onSearch }: SearchPanelProps) {
           id="city-input"
           className="field-input"
           value={city}
-          onChange={e => setCity(e.target.value)}
-          placeholder="Ej: Burgos, Palencia..."
+          onChange={e => { setCity(e.target.value); if (cityError) setCityError(false) }}
+          placeholder="Ej: Valladolid, Bogotá, Lima..."
           autoComplete="off"
           spellCheck={false}
-          style={{ fontFamily: 'var(--fb)', fontSize: '14px' }}
+          aria-invalid={cityError}
+          style={{ ...FIELD_FONT, ...(cityError ? { borderColor: 'var(--danger)' } : {}) }}
         />
       </div>
 
@@ -55,7 +100,7 @@ export default function SearchPanel({ search, onSearch }: SearchPanelProps) {
           className="field-select"
           value={radius}
           onChange={e => setRadius(e.target.value)}
-          style={{ fontFamily: 'var(--fb)', fontSize: '14px' }}
+          style={FIELD_FONT}
         >
           <option value="5">5 km — solo ciudad</option>
           <option value="10">10 km — ciudad + alrededores</option>
@@ -73,7 +118,7 @@ export default function SearchPanel({ search, onSearch }: SearchPanelProps) {
           className="field-select"
           value={sector}
           onChange={e => setSector(e.target.value)}
-          style={{ fontFamily: 'var(--fb)', fontSize: '14px' }}
+          style={FIELD_FONT}
         >
           {SECTORS.map(s => <option key={s.value} value={s.value}>{s.label}</option>)}
         </select>
@@ -95,14 +140,14 @@ export default function SearchPanel({ search, onSearch }: SearchPanelProps) {
       </Button>
 
       {/* Estado */}
-      {search.status && (
+      {(search.status || cityError) && (
         <div
           className="search-status"
-          style={{ color: search.color || 'var(--txt3)' }}
+          style={{ color: cityError ? 'var(--danger)' : (search.color || 'var(--txt3)') }}
           aria-live="polite"
           aria-atomic="true"
         >
-          {search.status}
+          {cityError ? 'Indica una ciudad donde buscar' : search.status}
         </div>
       )}
     </section>

@@ -191,6 +191,12 @@ ALTER TABLE leads ADD COLUMN IF NOT EXISTS facebook  TEXT NOT NULL DEFAULT '';
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS twitter   TEXT NOT NULL DEFAULT '';
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS tiktok    TEXT NOT NULL DEFAULT '';
 
+-- ── Campos demográficos (búsqueda y filtrado global) ──────────────
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS country TEXT NOT NULL DEFAULT '';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS region  TEXT NOT NULL DEFAULT '';
+ALTER TABLE leads ADD COLUMN IF NOT EXISTS city    TEXT NOT NULL DEFAULT '';
+CREATE INDEX IF NOT EXISTS idx_leads_geo ON leads(country, region, city);
+
 -- ── Vista útil para análisis ──────────────────────────────────────
 CREATE OR REPLACE VIEW leads_summary AS
 SELECT
