@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { createPortal } from 'react-dom'
 import { X, Copy, Check, ExternalLink, Loader2, LayoutTemplate, Sparkles } from 'lucide-react'
 import { Button } from '@/components/ui/button'
-import { generateLandingPrompt } from '../api.js'
+import { generateLandingPrompt } from '../api'
 
 interface Lead {
   id: string

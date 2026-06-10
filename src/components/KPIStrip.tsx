@@ -1,6 +1,14 @@
-export default function KPIStrip({ leads, statuses, contacts }) {
+import type { Lead, ContactsMap, StatusMap } from '../types'
+
+interface KPIStripProps {
+  leads: Lead[]
+  statuses: StatusMap
+  contacts: ContactsMap
+}
+
+export default function KPIStrip({ leads, statuses, contacts }: KPIStripProps) {
   const total   = leads.length
-  const noWeb   = leads.filter(l => l.url.startsWith('Sin')).length
+  const noWeb   = leads.filter(l => (l.url || '').startsWith('Sin')).length
   const cont    = leads.filter(l => {
     const c = contacts[l.id] || {}
     return c.phone?.done || c.email?.done || c.visit?.done

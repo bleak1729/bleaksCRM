@@ -6,17 +6,8 @@ import { Label }    from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
 /* ── Types ───────────────────────────────────────────────────────── */
-export interface Project {
-  id?:         string
-  customer_id: string
-  name:        string
-  description: string
-  status:      'activo' | 'en_pausa' | 'completado' | 'cancelado'
-  start_date?: string | null
-  end_date?:   string | null
-  value:       number
-  created_at?: string
-}
+import type { Project } from '../types'
+export type { Project }
 
 interface Props {
   project:     Partial<Project> & { customer_id: string }

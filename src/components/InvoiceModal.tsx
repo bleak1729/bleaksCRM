@@ -6,26 +6,8 @@ import { Label }    from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
 /* ── Types ───────────────────────────────────────────────────────── */
-export interface LineItem {
-  description: string
-  quantity:    number
-  unit_price:  number
-}
-
-export interface Invoice {
-  id?:             string
-  customer_id:     string
-  invoice_number:  string
-  issue_date:      string
-  due_date?:       string | null
-  amount:          number
-  tax_pct:         number
-  status:          'cotizacion' | 'enviada' | 'pagada' | 'vencida'
-  line_items:      LineItem[]
-  description:     string
-  notes:           string
-  created_at?:     string
-}
+import type { Invoice, LineItem } from '../types'
+export type { Invoice, LineItem }
 
 interface Props {
   invoice:  Partial<Invoice> & { customer_id: string }

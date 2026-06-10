@@ -3,7 +3,7 @@ import { Eye, EyeOff, LogIn, UserPlus, Loader2, KeyRound, Copy, Check, ShieldChe
 import { Button } from '@/components/ui/button'
 import { Input }  from '@/components/ui/input'
 import { Label }  from '@/components/ui/label'
-import { getAuthStatus, login, setupAccount, saveToken, recoverPassword } from '../api.js'
+import { getAuthStatus, login, setupAccount, saveToken, recoverPassword } from '../api'
 
 type Mode = 'login' | 'recover'
 

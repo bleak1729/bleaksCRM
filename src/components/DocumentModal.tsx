@@ -5,17 +5,8 @@ import { Input }    from '@/components/ui/input'
 import { Label }    from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
-export interface Document {
-  id?:         string
-  customer_id: string
-  project_id?: string | null
-  title:       string
-  type:        'contrato' | 'propuesta' | 'informe' | 'presupuesto' | 'otro'
-  drive_url:   string
-  doc_date?:   string | null
-  notes:       string
-  created_at?: string
-}
+import type { DocumentItem as Document } from '../types'
+export type { Document }
 
 interface Props {
   document: Partial<Document> & { customer_id: string }

@@ -10,28 +10,11 @@ import DocumentModal from './DocumentModal'
 import type { CustomerContact } from './ContactModal'
 import type { Invoice }         from './InvoiceModal'
 import type { Document }        from './DocumentModal'
-import { downloadInvoicePdf }   from '../api.js'
+import { downloadInvoicePdf }   from '../api'
 
 /* ── Types ───────────────────────────────────────────────────────── */
-export interface Customer {
-  id?:              string
-  lead_id?:         string | null
-  name:             string
-  sector:           string
-  contact_name:     string
-  email:            string
-  phone:            string
-  address:          string
-  website:          string
-  drive_folder_url?: string
-  status:           'activo' | 'pausado' | 'cancelado'
-  contract_start?:  string | null
-  contract_end?:    string | null
-  monthly_value:    number
-  services:         string[]
-  notes:            string
-  created_at?:      string
-}
+import type { Customer } from '../types'
+export type { Customer }
 
 interface Project { id?: string; customer_id: string; name: string; status: string; value: number; drive_folder_url?: string }
 

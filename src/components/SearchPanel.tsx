@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Search, Loader2 } from 'lucide-react'
+import type { SearchState } from '../types'
 
 const SECTORS = [
   { value: '',             label: 'Todos los sectores' },
@@ -16,7 +17,12 @@ const SECTORS = [
   { value: 'Academia',     label: 'Academias y autoescuelas' },
 ]
 
-export default function SearchPanel({ search, onSearch }) {
+interface SearchPanelProps {
+  search: SearchState
+  onSearch: (params: { city: string; radius: number; sector: string }) => void
+}
+
+export default function SearchPanel({ search, onSearch }: SearchPanelProps) {
   const [city,   setCity]   = useState('Valladolid')
   const [radius, setRadius] = useState('10')
   const [sector, setSector] = useState('')
@@ -78,7 +84,7 @@ export default function SearchPanel({ search, onSearch }) {
         onClick={handleSearch}
         disabled={search.loading}
         shape="square"
-        aria-label="Buscar leads en Google Maps vía Apify"
+        aria-label="Buscar leads en Google Maps"
         style={{ fontFamily: 'var(--fd)', fontWeight: 600, height: 40, alignSelf: 'flex-end' }}
       >
         {search.loading

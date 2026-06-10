@@ -15,7 +15,7 @@ interface Lead {
   [k: string]: unknown
 }
 interface ContactState { phone?: { done: boolean }; email?: { done: boolean }; visit?: { done: boolean } }
-interface Customer { id: string; status: string; monthly_value: number; [k: string]: unknown }
+type Customer = import('../types').Customer
 interface Props {
   leads:      Lead[]
   statuses:   Record<string, string>

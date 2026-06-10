@@ -1,36 +1,45 @@
 import { useState, useEffect, useCallback, useRef } from 'react'
-import { Sidebar }       from './components/ui/modern-side-bar.tsx'
-import SearchPanel       from './components/SearchPanel.jsx'
-import KPIStrip          from './components/KPIStrip.jsx'
-import LeadTable         from './components/LeadTable.tsx'
-import LeadEditModal     from './components/LeadEditModal.tsx'
-import Dashboard         from './components/Dashboard.tsx'
-import Login             from './components/Login.tsx'
-import NewLeadModal      from './components/NewLeadModal.tsx'
-import CustomerList      from './components/CustomerList.tsx'
+import { Sidebar }       from './components/ui/modern-side-bar'
+import SearchPanel       from './components/SearchPanel'
+import KPIStrip          from './components/KPIStrip'
+import LeadTable         from './components/LeadTable'
+import LeadEditModal     from './components/LeadEditModal'
+import Dashboard         from './components/Dashboard'
+import Login             from './components/Login'
+import NewLeadModal      from './components/NewLeadModal'
+import CustomerList      from './components/CustomerList'
 import { getHealth, loadData, saveData, startSearch, getToken, clearToken,
-         loadCustomers, createCustomer, updateCustomer, deleteCustomer,
-         loadProjects, createProject, updateProject, deleteProject,
+         createCustomer, updateCustomer, deleteCustomer,
+         loadCustomers, loadProjects, createProject, updateProject, deleteProject,
          loadContacts, createContact, updateContact, deleteContact,
          loadInvoices, createInvoice, updateInvoice, deleteInvoice,
          loadDocuments, createDocument, updateDocument, deleteDocument,
-         regenerateRecoveryKey } from './api.js'
+         regenerateRecoveryKey } from './api'
+import type { Lead, LeadContact, ContactsMap, NotesMap, StatusMap,
+              Customer, Project, CustomerContact, Invoice, DocumentItem,
+              Health, SearchState } from './types'
 
+interface LeadUpdates {
+  lead?: Partial<Lead>
+  status?: string
+  note?: string
+  contact?: LeadContact
+}
 
 // Inicializa el tema desde localStorage (evita flash antes del primer render)
-const getInitialTheme = () => {
+const getInitialTheme = (): 'dark' | 'light' => {
   const saved = localStorage.getItem('bleaks-crm-theme')
   return saved === 'dark' ? 'dark' : 'light'   // light por defecto
 }
 
 export default function App() {
   // ── Auth ───────────────────────────────────────────────────────
-  const [authUser, setAuthUser] = useState(() => {
+  const [authUser, setAuthUser] = useState<string | null>(() => {
     // Si hay token guardado, lo consideramos autenticado hasta que el servidor diga lo contrario
     return getToken() ? localStorage.getItem('bleaks-crm-user') || '' : null
   })
 
-  const handleLogin = (username) => {
+  const handleLogin = (username: string) => {
     localStorage.setItem('bleaks-crm-user', username)
     setAuthUser(username)
   }
@@ -41,34 +50,34 @@ export default function App() {
     setAuthUser(null)
   }
 
-  const [recoveryModal, setRecoveryModal] = useState(null) // null | { key, copied }
+  const [recoveryModal, setRecoveryModal] = useState<{ key: string; copied: boolean } | null>(null)
   const handleRegenerateKey = async () => {
     try {
       const { recoveryKey } = await regenerateRecoveryKey()
       setRecoveryModal({ key: recoveryKey, copied: false })
     } catch (err) {
-      alert('Error al generar la clave: ' + (err.message || err))
+      alert('Error al generar la clave: ' + ((err as Error).message || err))
     }
   }
 
   // ── State ─────────────────────────────────────────────────────
-  const [leads,     setLeads]     = useState([])
+  const [leads,     setLeads]     = useState<Lead[]>([])
   const [activeNav, setActiveNav] = useState('busqueda')
   const [theme,     setTheme]     = useState(getInitialTheme)
-  const [contacts,  setContacts]  = useState({})
-  const [notes,     setNotes]     = useState({})
-  const [statuses,  setStatuses]  = useState({})
+  const [contacts,  setContacts]  = useState<ContactsMap>({})
+  const [notes,     setNotes]     = useState<NotesMap>({})
+  const [statuses,  setStatuses]  = useState<StatusMap>({})
   const [filter,    setFilter]    = useState('all')
-  const [customers,         setCustomers]         = useState([])
-  const [projects,          setProjects]          = useState([])
-  const [customerContacts,  setCustomerContacts]  = useState([])
-  const [invoices,          setInvoices]          = useState([])
-  const [documents,         setDocuments]         = useState([])
-  const [editModalLead,  setEditModalLead]  = useState(null)
+  const [customers,         setCustomers]         = useState<Customer[]>([])
+  const [projects,          setProjects]          = useState<Project[]>([])
+  const [customerContacts,  setCustomerContacts]  = useState<CustomerContact[]>([])
+  const [invoices,          setInvoices]          = useState<Invoice[]>([])
+  const [documents,         setDocuments]         = useState<DocumentItem[]>([])
+  const [editModalLead,  setEditModalLead]  = useState<Lead | null>(null)
   const [showNewLead,    setShowNewLead]    = useState(false)
-  const [health,        setHealth]       = useState(null)
-  const [toast,       setToast]        = useState(null)
-  const [search,      setSearch]       = useState({ loading: false, status: '', color: '' })
+  const [health,        setHealth]       = useState<Health | null>(null)
+  const [toast,       setToast]        = useState<string | null>(null)
+  const [search,      setSearch]       = useState<SearchState>({ loading: false, status: '', color: '' })
 
   // Refs to latest state for async closures
   const leadsRef     = useRef(leads)
@@ -76,6 +85,11 @@ export default function App() {
   const notesRef     = useRef(notes)
   const statusesRef  = useRef(statuses)
   const customersRef = useRef(customers)
+
+  // Leads borrados por el usuario pendientes de sincronizar — el servidor solo
+  // elimina estos ids, nunca por omisión (evita que una pestaña con datos
+  // desactualizados machaque lo guardado desde otro dispositivo)
+  const pendingDeletesRef = useRef<Set<string>>(new Set())
 
   useEffect(() => { leadsRef.current     = leads     }, [leads])
   useEffect(() => { contactsRef.current  = contacts  }, [contacts])
@@ -114,37 +128,48 @@ export default function App() {
 
     getHealth()
       .then(setHealth)
-      .catch(() => setHealth({ ok: false, apify: false }))
+      .catch(() => setHealth({ ok: false }))
   }, [])
 
   // ── Toast ──────────────────────────────────────────────────────
-  const toastTimer = useRef(null)
-  const showToast = useCallback(msg => {
+  const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)
+  const showToast = useCallback((msg: string) => {
     setToast(msg)
     clearTimeout(toastTimer.current)
     toastTimer.current = setTimeout(() => setToast(null), 2600)
   }, [])
 
   // ── Persist ────────────────────────────────────────────────────
-  const persist = useCallback(async (overrides = {}) => {
+  const persist = useCallback(async (overrides: { leads?: Lead[]; contacts?: ContactsMap; notes?: NotesMap; statuses?: StatusMap } = {}) => {
+    const deletedIds = [...pendingDeletesRef.current]
     const payload = {
       leads:    overrides.leads    ?? leadsRef.current,
       contacts: overrides.contacts ?? contactsRef.current,
       notes:    overrides.notes    ?? notesRef.current,
       statuses: overrides.statuses ?? statusesRef.current,
-      ts: Date.now()
+      deletedIds,
+      ts: Date.now(),
     }
-    try { await saveData(payload) } catch { /* fail silently */ }
-  }, [])
+    try {
+      await saveData(payload)
+      // Solo damos los borrados por sincronizados si el guardado llegó al servidor
+      for (const id of deletedIds) pendingDeletesRef.current.delete(id)
+      return true
+    } catch (err) {
+      console.error('Error guardando datos:', err)
+      showToast('⚠ Error al guardar — los cambios no se han sincronizado')
+      return false
+    }
+  }, [showToast])
 
   // ── Save (manual button) ───────────────────────────────────────
   const handleSave = useCallback(async () => {
-    await persist()
-    showToast('Guardado correctamente')
+    const ok = await persist()
+    if (ok) showToast('Guardado correctamente')
   }, [persist, showToast])
 
   // ── Update lead (desde el modal de edición) ───────────────────
-  const updateLead = useCallback((id, updates) => {
+  const updateLead = useCallback((id: string, updates: LeadUpdates) => {
     // Calcular todos los nuevos valores usando los refs actuales
     const nextLeads    = updates.lead !== undefined
       ? leadsRef.current.map(l => l.id === id ? { ...l, ...updates.lead } : l)
@@ -189,7 +214,7 @@ export default function App() {
   }, [persist])
 
   // ── Customer handlers ──────────────────────────────────────────
-  const handleSaveCustomer = useCallback(async (customer) => {
+  const handleSaveCustomer = useCallback(async (customer: Customer) => {
     try {
       if (customer.id) {
         const updated = await updateCustomer(customer.id, customer)
@@ -203,7 +228,7 @@ export default function App() {
     } catch { showToast('Error al guardar cliente') }
   }, [showToast])
 
-  const handleDeleteCustomer = useCallback(async (id) => {
+  const handleDeleteCustomer = useCallback(async (id: string) => {
     try {
       await deleteCustomer(id)
       setCustomers(prev => prev.filter(c => c.id !== id))
@@ -213,7 +238,7 @@ export default function App() {
   }, [showToast])
 
   // ── Project handlers ───────────────────────────────────────────
-  const handleSaveProject = useCallback(async (project) => {
+  const handleSaveProject = useCallback(async (project: Project) => {
     try {
       if (project.id) {
         const updated = await updateProject(project.id, project)
@@ -227,7 +252,7 @@ export default function App() {
     } catch { showToast('Error al guardar proyecto') }
   }, [showToast])
 
-  const handleDeleteProject = useCallback(async (id) => {
+  const handleDeleteProject = useCallback(async (id: string) => {
     try {
       await deleteProject(id)
       setProjects(prev => prev.filter(p => p.id !== id))
@@ -236,7 +261,7 @@ export default function App() {
   }, [showToast])
 
   // ── Contact handlers ───────────────────────────────────────────
-  const handleSaveContact = useCallback(async (contact) => {
+  const handleSaveContact = useCallback(async (contact: CustomerContact) => {
     try {
       if (contact.id) {
         const updated = await updateContact(contact.id, contact)
@@ -250,7 +275,7 @@ export default function App() {
     } catch { showToast('Error al guardar contacto') }
   }, [showToast])
 
-  const handleDeleteContact = useCallback(async (id) => {
+  const handleDeleteContact = useCallback(async (id: string) => {
     try {
       await deleteContact(id)
       setCustomerContacts(prev => prev.filter(c => c.id !== id))
@@ -259,7 +284,7 @@ export default function App() {
   }, [showToast])
 
   // ── Invoice handlers ───────────────────────────────────────────
-  const handleSaveInvoice = useCallback(async (invoice) => {
+  const handleSaveInvoice = useCallback(async (invoice: Invoice) => {
     try {
       if (invoice.id) {
         const updated = await updateInvoice(invoice.id, invoice)
@@ -273,7 +298,7 @@ export default function App() {
     } catch { showToast('Error al guardar factura') }
   }, [showToast])
 
-  const handleDeleteInvoice = useCallback(async (id) => {
+  const handleDeleteInvoice = useCallback(async (id: string) => {
     try {
       await deleteInvoice(id)
       setInvoices(prev => prev.filter(i => i.id !== id))
@@ -282,7 +307,7 @@ export default function App() {
   }, [showToast])
 
   // ── Document handlers ──────────────────────────────────────────
-  const handleSaveDocument = useCallback(async (document) => {
+  const handleSaveDocument = useCallback(async (document: DocumentItem) => {
     try {
       if (document.id) {
         const updated = await updateDocument(document.id, document)
@@ -296,7 +321,7 @@ export default function App() {
     } catch { showToast('Error al guardar documento') }
   }, [showToast])
 
-  const handleDeleteDocument = useCallback(async (id) => {
+  const handleDeleteDocument = useCallback(async (id: string) => {
     try {
       await deleteDocument(id)
       setDocuments(prev => prev.filter(d => d.id !== id))
@@ -305,7 +330,7 @@ export default function App() {
   }, [showToast])
 
   // ── Google Maps search ────────────────────────────────────────
-  const runSearch = useCallback(async ({ city, radius, sector }) => {
+  const runSearch = useCallback(async ({ city, radius, sector }: { city: string; radius: number; sector: string }) => {
     setSearch({ loading: true, status: 'Buscando en Google Maps...', color: 'var(--txt2)' })
     try {
       const { leads: raw, total, query } = await startSearch({ city, radius, sector })
@@ -326,7 +351,7 @@ export default function App() {
       })
       showToast(`+${newLeads.length} leads vía Google Maps`)
     } catch (err) {
-      setSearch({ loading: false, status: `Error: ${err.message}`, color: 'var(--danger)' })
+      setSearch({ loading: false, status: `Error: ${(err as Error).message}`, color: 'var(--danger)' })
     }
   }, [persist, showToast])
 
@@ -345,16 +370,16 @@ export default function App() {
 
   // ── Export CSV ─────────────────────────────────────────────────
   const exportCSV = useCallback(() => {
-    const esc = v => {
+    const esc = (v: unknown) => {
       const s = String(v ?? '')
       return (s.includes(',') || s.includes('"') || s.includes('\n'))
         ? `"${s.replace(/"/g, '""')}"` : s
     }
-    const prio = { high: 'Alta', med: 'Media', low: 'Baja' }
+    const prio: Record<string, string> = { high: 'Alta', med: 'Media', low: 'Baja' }
     const headers = ['Nombre','Sector','Teléfono','Web','Dirección','Prioridad','Estado','Puntuación','Reseñas','Fallos','SaaS','Notas']
     const rows = leads.map(l => [
       l.name, l.sector, l.phone || '', l.url, l.loc,
-      prio[l.priority] || '', statuses[l.id] || 'sin contactar',
+      prio[l.priority || ''] || '', statuses[l.id] || 'sin contactar',
       l.rating || '', l.reviews || '',
       (l.flaws || []).join(' | '),
       (l.saas  || []).join(' | '),
@@ -367,22 +392,30 @@ export default function App() {
     a.download = `bleaks-crm-${new Date().toISOString().slice(0, 10)}.csv`
     a.click()
     showToast(`CSV exportado · ${leads.length} leads`)
-  }, [leads, contacts, notes, statuses, showToast])
+  }, [leads, statuses, notes, showToast])
 
   // ── Import JSON ────────────────────────────────────────────────
-  const importData = useCallback(e => {
-    const file = e.target.files[0]
+  const importData = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
     if (!file) return
     const reader = new FileReader()
     reader.onload = async ev => {
       try {
-        const d = JSON.parse(ev.target.result)
-        if (d.leads)    setLeads(d.leads)
+        const d = JSON.parse(String(ev.target?.result))
+        // Importar reemplaza el dataset: los leads actuales que no estén en el
+        // fichero se marcan como borrados explícitos para la sincronización
+        if (d.leads) {
+          const importedIds = new Set((d.leads as Lead[]).map(l => l.id))
+          for (const l of leadsRef.current) {
+            if (!importedIds.has(l.id)) pendingDeletesRef.current.add(l.id)
+          }
+          setLeads(d.leads)
+        }
         if (d.contacts) setContacts(d.contacts)
         if (d.notes)    setNotes(d.notes)
         if (d.statuses) setStatuses(d.statuses)
-        await persist({ leads: d.leads, contacts: d.contacts, notes: d.notes, statuses: d.statuses })
-        showToast(`Importado · ${d.leads?.length || 0} leads`)
+        const ok = await persist({ leads: d.leads, contacts: d.contacts, notes: d.notes, statuses: d.statuses })
+        if (ok) showToast(`Importado · ${d.leads?.length || 0} leads`)
       } catch { showToast('Error al importar — archivo inválido') }
     }
     reader.readAsText(file)
@@ -417,7 +450,7 @@ export default function App() {
             <button
               onClick={() => {
                 navigator.clipboard.writeText(recoveryModal.key)
-                setRecoveryModal(m => ({ ...m, copied: true }))
+                setRecoveryModal(m => m && ({ ...m, copied: true }))
               }}
               style={{ background: 'none', border: 'none', cursor: 'pointer', color: recoveryModal.copied ? 'var(--success, #15803d)' : 'var(--txt3)', display: 'flex', padding: 4, borderRadius: 4 }}
             >
@@ -480,7 +513,7 @@ export default function App() {
             onDeleteInvoice={handleDeleteInvoice}
             onSaveDocument={handleSaveDocument}
             onDeleteDocument={handleDeleteDocument}
-            onViewLead={leadId => {
+            onViewLead={(leadId: string) => {
               const lead = leads.find(l => l.id === leadId)
               if (lead) { setEditModalLead(lead); setActiveNav('busqueda') }
             }}
@@ -496,8 +529,9 @@ export default function App() {
               filter={filter}
               onFilter={setFilter}
               onNewLead={() => setShowNewLead(true)}
-              onEdit={lead => setEditModalLead(lead)}
-              onDelete={id => {
+              onEdit={(lead: Lead) => setEditModalLead(lead)}
+              onDelete={(id: string) => {
+                pendingDeletesRef.current.add(id)
                 setLeads(prev => { const next = prev.filter(l => l.id !== id); persist({ leads: next }); return next })
                 showToast('Lead eliminado')
               }}
@@ -512,7 +546,7 @@ export default function App() {
       {/* ── MODAL NUEVO LEAD MANUAL ─────────────────────────────── */}
       {showNewLead && (
         <NewLeadModal
-          onSave={lead => {
+          onSave={(lead: Lead) => {
             setLeads(prev => { const next = [lead, ...prev]; persist({ leads: next }); return next })
             showToast('Lead añadido manualmente')
           }}
@@ -527,7 +561,7 @@ export default function App() {
           status={statuses[editModalLead.id] || 'sin contactar'}
           contact={contacts[editModalLead.id] || {}}
           note={notes[editModalLead.id] || ''}
-          onSave={(id, updates) => {
+          onSave={(id: string, updates: LeadUpdates) => {
             updateLead(id, updates)
             setEditModalLead(null)
             showToast('Lead actualizado')

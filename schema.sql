@@ -50,9 +50,10 @@ CREATE INDEX IF NOT EXISTS idx_leads_priority ON leads(priority);
 CREATE INDEX IF NOT EXISTS idx_leads_source   ON leads(source);
 
 -- ── Row Level Security ────────────────────────────────────────────
--- Desactivada: el servidor usa la service role key que la bypasea.
--- Si en el futuro añades autenticación de usuarios, actívala aquí.
-ALTER TABLE leads DISABLE ROW LEVEL SECURITY;
+-- Activada SIN políticas: deniega todo acceso con la anon key.
+-- El servidor usa la service role key, que bypasea RLS, así que la app
+-- funciona igual — esto es la red de seguridad si la anon key se filtra.
+ALTER TABLE leads ENABLE ROW LEVEL SECURITY;
 
 -- ── Tabla de usuarios (contraseñas encriptadas con bcrypt) ──────────
 CREATE TABLE IF NOT EXISTS users (
@@ -64,7 +65,7 @@ CREATE TABLE IF NOT EXISTS users (
 
 ALTER TABLE users ADD COLUMN IF NOT EXISTS recovery_key_hash TEXT;
 
-ALTER TABLE users DISABLE ROW LEVEL SECURITY;
+ALTER TABLE users ENABLE ROW LEVEL SECURITY;
 
 -- ── Tabla de clientes (leads convertidos) ────────────────────────
 CREATE TABLE IF NOT EXISTS customers (
@@ -96,7 +97,7 @@ CREATE TRIGGER customers_updated_at
   BEFORE UPDATE ON customers
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
-ALTER TABLE customers DISABLE ROW LEVEL SECURITY;
+ALTER TABLE customers ENABLE ROW LEVEL SECURITY;
 
 -- ── Tabla de proyectos (vinculados a clientes) ────────────────────
 CREATE TABLE IF NOT EXISTS projects (
@@ -121,7 +122,7 @@ CREATE TRIGGER projects_updated_at
   BEFORE UPDATE ON projects
   FOR EACH ROW EXECUTE FUNCTION update_updated_at();
 
-ALTER TABLE projects DISABLE ROW LEVEL SECURITY;
+ALTER TABLE projects ENABLE ROW LEVEL SECURITY;
 
 -- ── Contactos múltiples por cliente ─────────────────────────────
 CREATE TABLE IF NOT EXISTS customer_contacts (
@@ -136,7 +137,7 @@ CREATE TABLE IF NOT EXISTS customer_contacts (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_ccontacts_customer ON customer_contacts(customer_id);
-ALTER TABLE customer_contacts DISABLE ROW LEVEL SECURITY;
+ALTER TABLE customer_contacts ENABLE ROW LEVEL SECURITY;
 
 -- ── Facturas ─────────────────────────────────────────────────────
 CREATE TABLE IF NOT EXISTS invoices (
@@ -158,7 +159,7 @@ CREATE INDEX IF NOT EXISTS idx_invoices_customer ON invoices(customer_id);
 DROP TRIGGER IF EXISTS invoices_updated_at ON invoices;
 CREATE TRIGGER invoices_updated_at
   BEFORE UPDATE ON invoices FOR EACH ROW EXECUTE FUNCTION update_updated_at();
-ALTER TABLE invoices DISABLE ROW LEVEL SECURITY;
+ALTER TABLE invoices ENABLE ROW LEVEL SECURITY;
 
 -- ── Documentos (metadatos + link Drive) ──────────────────────────
 CREATE TABLE IF NOT EXISTS documents (
@@ -174,7 +175,7 @@ CREATE TABLE IF NOT EXISTS documents (
   created_at  TIMESTAMPTZ NOT NULL DEFAULT NOW()
 );
 CREATE INDEX IF NOT EXISTS idx_documents_customer ON documents(customer_id);
-ALTER TABLE documents DISABLE ROW LEVEL SECURITY;
+ALTER TABLE documents ENABLE ROW LEVEL SECURITY;
 
 -- ── Line items para facturas ─────────────────────────────────────
 ALTER TABLE invoices ADD COLUMN IF NOT EXISTS line_items JSONB NOT NULL DEFAULT '[]';

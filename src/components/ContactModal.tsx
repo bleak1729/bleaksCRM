@@ -5,17 +5,8 @@ import { Input }    from '@/components/ui/input'
 import { Label }    from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
 
-export interface CustomerContact {
-  id?:         string
-  customer_id: string
-  name:        string
-  role:        string
-  email:       string
-  phone:       string
-  is_primary:  boolean
-  notes:       string
-  created_at?: string
-}
+import type { CustomerContact } from '../types'
+export type { CustomerContact }
 
 interface Props {
   contact:  Partial<CustomerContact> & { customer_id: string }

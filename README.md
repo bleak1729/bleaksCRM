@@ -75,6 +75,8 @@ GOOGLE_MAPS_API_KEY=AIza...
 PORT=3000
 ```
 
+> `JWT_SECRET` es **obligatorio en producción** — el servidor no arranca sin él.
+
 ### 3. Inicializar la base de datos
 
 Ejecuta `schema.sql` en el **SQL Editor** de Supabase (Dashboard → SQL Editor → New query).
@@ -132,10 +134,52 @@ El CRM usa un único usuario administrador:
 |---|---|
 | `npm run dev:all` | Desarrollo completo (servidor + frontend) |
 | `npm run build` | Build de producción |
+| `npm test` | Tests del backend (node:test) |
+| `npm run lint` | ESLint (backend + frontend) |
+| `npm run typecheck` | Comprobación de tipos TypeScript |
 | `node scripts/reset-admin.js <pass>` | Reset de emergencia de contraseña |
+
+---
+
+## Estructura del proyecto
+
+```
+server.js          # Entry del servidor: monta routers y sirve /dist
+api/index.js       # Entry serverless para Vercel (reexporta server.js)
+lib/               # Módulos compartidos del backend
+  config.js        #   Variables de entorno + versión (de package.json)
+  supabase.js      #   Cliente Supabase + middleware requireSupabase
+  auth.js          #   JWT (requireAuth) + clave de recuperación
+  url-guard.js     #   Validación anti-SSRF de URLs externas
+  social-scan.js   #   Detección de redes sociales en webs
+  sector-data.js   #   Queries, fallos y SaaS por sector
+  leads.js         #   Conversión filas ↔ payload + mapeo de Places
+routes/            # Un router Express por dominio
+  auth.js          #   Login/setup/recover (con rate limiting)
+  data.js          #   Leads (sync con borrados explícitos)
+  search.js        #   Búsqueda en Google Places
+  social.js        #   /api/social
+  landing.js       #   Generador de prompt de landing
+  analyze.js       #   Diagnóstico digital + PageSpeed
+  crm.js           #   CRUD de customers/projects/contacts/documents
+  invoices.js      #   Facturas + PDF
+src/               # Frontend React + TypeScript
+  types.ts         #   Tipos compartidos (fuente única)
+  api.ts           #   Cliente HTTP (helper request + manejo de 401)
+test/              # Tests del backend (node --test)
+```
+
+---
+
+## Seguridad
+
+- **RLS activado** en todas las tablas de Supabase (sin políticas → la anon key no accede a nada; el servidor usa la service key)
+- **Rate limiting** en login/setup/recover: 10 intentos por IP cada 15 min
+- **Anti-SSRF**: el servidor solo hace fetch a URLs http(s) públicas (nunca a IPs privadas o localhost)
+- El **token JWT** caduca a los 7 días; el frontend redirige al login automáticamente
 
 ---
 
 ## Versión
 
-**v1.6.65** — Ver historial de commits para el changelog completo.
+La versión vive **solo en `package.json`** y se propaga al servidor (`/api/health`, banner de arranque) y al frontend (sidebar) automáticamente. Ver historial de commits para el changelog.

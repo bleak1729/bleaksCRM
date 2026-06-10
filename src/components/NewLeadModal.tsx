@@ -9,7 +9,7 @@ import { Badge }     from '@/components/ui/badge'
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from '@/components/ui/select'
-import { analyzeLead } from '../api.js'
+import { analyzeLead } from '../api'
 
 const SECTORS = [
   'Salud','Veterinaria','Belleza','Hosteleria','Retail',

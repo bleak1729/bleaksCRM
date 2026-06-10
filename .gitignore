@@ -28,3 +28,6 @@ npm-debug.log*
 
 # Scripts de migración (uso puntual)
 migrate.js
+
+# Mockups generados (salida del generador de landings)
+Mockups/

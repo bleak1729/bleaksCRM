@@ -4,7 +4,7 @@ import {
   X, Phone, Globe, MapPin, Tag, Zap, Star, Share2, LayoutTemplate,
   StickyNote, CheckCircle2, Mail, Users, CircleCheck, Sparkles, Loader2,
 } from 'lucide-react'
-import { analyzeLead, findSocial } from '../api.js'
+import { analyzeLead, findSocial } from '../api'
 import LandingPromptModal from './LandingPromptModal'
 import { Badge }      from '@/components/ui/badge'
 import { Button }     from '@/components/ui/button'

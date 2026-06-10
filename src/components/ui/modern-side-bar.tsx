@@ -8,13 +8,12 @@ import {
 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
-import versionData from '../../version.json';
 
 /* ── Tipos ────────────────────────────────────────────────────── */
 interface Lead { id: string; [key: string]: unknown }
 
 interface SidebarProps {
-  health:        { ok: boolean; googleMaps: boolean; supabase?: boolean } | null;
+  health:        import('@/types').Health | null;
   theme:         'dark' | 'light';
   onToggleTheme: () => void;
   leads:         Lead[];
@@ -380,7 +379,7 @@ export function Sidebar({
                 Cerrar sesión
               </button>
               <div style={{ textAlign: 'center', marginTop: '8px', fontSize: '11px', color: 'var(--txt3)', fontFamily: 'var(--fb)', letterSpacing: '0.05em' }}>
-                v{versionData.version}
+                v{__APP_VERSION__}
               </div>
             </>
           ) : (
