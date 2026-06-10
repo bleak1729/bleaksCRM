@@ -157,6 +157,27 @@ function GeoSelect({ value, onChange, placeholder, options, disabled }: {
   )
 }
 
+function PageButton({ label, disabled, onClick }: { label: string; disabled?: boolean; onClick: () => void }) {
+  return (
+    <button
+      onClick={onClick}
+      disabled={disabled}
+      style={{
+        padding: '0 12px', height: 30,
+        fontFamily: 'var(--fd)', fontSize: 12.5, fontWeight: 600,
+        background: 'var(--bg2)', color: disabled ? 'var(--txt3)' : 'var(--txt2)',
+        border: '1px solid var(--bor2)', borderRadius: 'var(--r2)',
+        cursor: disabled ? 'not-allowed' : 'pointer',
+        opacity: disabled ? 0.5 : 1, transition: 'background .15s', whiteSpace: 'nowrap',
+      }}
+      onMouseEnter={e => { if (!disabled) e.currentTarget.style.background = 'var(--bg3)' }}
+      onMouseLeave={e => { e.currentTarget.style.background = 'var(--bg2)' }}
+    >
+      {label}
+    </button>
+  )
+}
+
 function StaticHead({ children }: { children: React.ReactNode }) {
   return <TableHead style={HEAD_STYLE}>{children}</TableHead>
 }
@@ -169,6 +190,7 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
   const [exportOpen,   setExportOpen]   = useState(false)
   const [pipelineOpen, setPipelineOpen] = useState(false)
   const [landingLead,  setLandingLead]  = useState<Lead | null>(null)
+  const [page, setPage] = useState(0)
   const [geoCountry, setGeoCountry] = useState('')
   const [geoRegion,  setGeoRegion]  = useState('')
   const [geoCity,    setGeoCity]    = useState('')
@@ -192,6 +214,7 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
   const handleSort = (col: SortCol) => {
     if (sortCol === col) setSortDir(d => d === 'asc' ? 'desc' : 'asc')
     else { setSortCol(col); setSortDir('asc') }
+    setPage(0)
   }
 
   // Cuenta para las opciones del pipeline select
@@ -239,6 +262,15 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
       return 0
     })
   }, [leads, statuses, filter, geoCountry, geoRegion, geoCity, search, sortCol, sortDir])
+
+  // ── Paginación: 100 leads por página ────────────────────────────
+  const PAGE_SIZE  = 100
+  const totalPages = Math.max(1, Math.ceil(sorted.length / PAGE_SIZE))
+  const safePage   = Math.min(page, totalPages - 1)
+  const paged      = useMemo(
+    () => sorted.slice(safePage * PAGE_SIZE, (safePage + 1) * PAGE_SIZE),
+    [sorted, safePage]
+  )
 
   return (
     <>
@@ -291,7 +323,7 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
               {FILTER_OPTIONS.map(o => (
                 <button
                   key={o.value}
-                  onClick={() => { onFilter(o.value); setPipelineOpen(false) }}
+                  onClick={() => { onFilter(o.value); setPipelineOpen(false); setPage(0) }}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                     width: '100%', padding: '7px 10px',
@@ -319,27 +351,27 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
           className="table-search-input"
           placeholder="Buscar por nombre, sector o teléfono..."
           value={search}
-          onChange={e => setSearch(e.target.value)}
+          onChange={e => { setSearch(e.target.value); setPage(0) }}
           spellCheck={false}
         />
 
         {/* ── Filtro demográfico (en cascada) ─────────────────── */}
         <GeoSelect
           value={geoCountry}
-          onChange={v => { setGeoCountry(v); setGeoRegion(''); setGeoCity('') }}
+          onChange={v => { setGeoCountry(v); setGeoRegion(''); setGeoCity(''); setPage(0) }}
           placeholder="País: todos"
           options={geoOptions.countries}
         />
         <GeoSelect
           value={geoRegion}
-          onChange={v => { setGeoRegion(v); setGeoCity('') }}
+          onChange={v => { setGeoRegion(v); setGeoCity(''); setPage(0) }}
           placeholder="Provincia: todas"
           options={geoOptions.regions}
           disabled={geoOptions.regions.length === 0}
         />
         <GeoSelect
           value={geoCity}
-          onChange={setGeoCity}
+          onChange={v => { setGeoCity(v); setPage(0) }}
           placeholder="Ciudad: todas"
           options={geoOptions.cities}
           disabled={geoOptions.cities.length === 0}
@@ -473,7 +505,9 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
         )}
 
         <span className="results-count" style={{ fontFamily: 'var(--fb)' }}>
-          {sorted.length} lead{sorted.length !== 1 ? 's' : ''} encontrados
+          {sorted.length === 0
+            ? '0 leads encontrados'
+            : `${safePage * PAGE_SIZE + 1}–${Math.min((safePage + 1) * PAGE_SIZE, sorted.length)} de ${sorted.length} lead${sorted.length !== 1 ? 's' : ''}`}
         </span>
 
         {onNewLead && (
@@ -513,7 +547,7 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
                   No hay leads con este filtro.
                 </TableCell>
               </TableRow>
-            ) : sorted.map(lead => {
+            ) : paged.map(lead => {
               const status = statuses[lead.id] || 'sin contactar'
               const urlBad = lead.url.startsWith('Sin')
               const prio = PRIO[lead.priority] || { variant: 'neutral' as const, label: lead.priority }
@@ -695,6 +729,22 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
           </TableBody>
         </Table>
       </div>
+
+      {/* ── Paginación ──────────────────────────────────────────── */}
+      {totalPages > 1 && (
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          padding: '12px 20px', borderTop: '1px solid var(--bor2)', background: 'var(--bg2)',
+        }}>
+          <PageButton label="« Primera" disabled={safePage === 0} onClick={() => setPage(0)} />
+          <PageButton label="‹ Anterior" disabled={safePage === 0} onClick={() => setPage(safePage - 1)} />
+          <span style={{ fontFamily: 'var(--fd)', fontSize: 13, color: 'var(--txt2)', padding: '0 10px', fontWeight: 600 }}>
+            Página {safePage + 1} de {totalPages}
+          </span>
+          <PageButton label="Siguiente ›" disabled={safePage >= totalPages - 1} onClick={() => setPage(safePage + 1)} />
+          <PageButton label="Última »" disabled={safePage >= totalPages - 1} onClick={() => setPage(totalPages - 1)} />
+        </div>
+      )}
     </div>
 
     {landingLead && (
