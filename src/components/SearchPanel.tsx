@@ -1,6 +1,9 @@
-import { useState } from 'react'
+import { useCallback, useState } from 'react'
 import { Button } from '@/components/ui/button'
 import { Search, Loader2 } from 'lucide-react'
+import GeoCombobox from '@/components/ui/geo-combobox'
+import { suggestGeo } from '../api'
+import { COUNTRIES, DEFAULT_COUNTRY } from '../data/countries'
 import type { SearchParams, SearchState } from '../types'
 
 const SECTORS = [
@@ -25,18 +28,40 @@ interface SearchPanelProps {
 const FIELD_FONT = { fontFamily: 'var(--fb)', fontSize: '14px' }
 
 export default function SearchPanel({ search, onSearch }: SearchPanelProps) {
-  const [country, setCountry] = useState('España')
+  const [countryCode, setCountryCode] = useState(DEFAULT_COUNTRY.code)
   const [region,  setRegion]  = useState('')
   const [city,    setCity]    = useState('')
   const [radius,  setRadius]  = useState('10')
   const [sector,  setSector]  = useState('')
   const [cityError, setCityError] = useState(false)
 
+  const countryName = COUNTRIES.find(c => c.code === countryCode)?.name || DEFAULT_COUNTRY.name
+
+  // Cascada: cambiar país limpia provincia y ciudad; cambiar provincia limpia ciudad
+  const handleCountry = (code: string) => {
+    setCountryCode(code)
+    setRegion('')
+    setCity('')
+  }
+  const handleRegion = (v: string) => {
+    setRegion(v)
+    if (city) setCity('')
+  }
+
+  const fetchRegions = useCallback(
+    (q: string) => suggestGeo({ type: 'region', country: countryCode, q }).then(r => r.suggestions),
+    [countryCode]
+  )
+  const fetchCities = useCallback(
+    (q: string) => suggestGeo({ type: 'city', country: countryCode, region, q }).then(r => r.suggestions),
+    [countryCode, region]
+  )
+
   const handleSearch = () => {
     if (!city.trim()) { setCityError(true); return }
     setCityError(false)
     onSearch({
-      country: country.trim() || 'España',
+      country: countryName,
       region:  region.trim(),
       city:    city.trim(),
       radius:  parseInt(radius) || 10,
@@ -46,49 +71,42 @@ export default function SearchPanel({ search, onSearch }: SearchPanelProps) {
 
   return (
     <section className="search-panel" aria-label="Buscar leads">
-      {/* País */}
+      {/* País — combobox precargado */}
       <div className="field">
-        <label className="field-label" htmlFor="country-input">País</label>
-        <input
-          id="country-input"
-          className="field-input"
-          value={country}
-          onChange={e => setCountry(e.target.value)}
-          placeholder="Ej: España, México, Argentina..."
-          autoComplete="off"
-          spellCheck={false}
+        <label className="field-label" htmlFor="country-select">País</label>
+        <select
+          id="country-select"
+          className="field-select"
+          value={countryCode}
+          onChange={e => handleCountry(e.target.value)}
           style={FIELD_FONT}
-        />
+        >
+          {COUNTRIES.map(c => <option key={c.code} value={c.code}>{c.name}</option>)}
+        </select>
       </div>
 
-      {/* Estado / Provincia */}
+      {/* Estado / Provincia — autocompletado acotado al país */}
       <div className="field">
         <label className="field-label" htmlFor="region-input">Estado / Provincia</label>
-        <input
+        <GeoCombobox
           id="region-input"
-          className="field-input"
           value={region}
-          onChange={e => setRegion(e.target.value)}
-          placeholder="Opcional — Ej: Castilla y León"
-          autoComplete="off"
-          spellCheck={false}
-          style={FIELD_FONT}
+          onChange={handleRegion}
+          fetchSuggestions={fetchRegions}
+          placeholder={`Opcional — escribe para buscar en ${countryName}`}
         />
       </div>
 
-      {/* Ciudad */}
+      {/* Ciudad — autocompletado acotado a país (+ provincia) */}
       <div className="field">
         <label className="field-label" htmlFor="city-input">Ciudad objetivo</label>
-        <input
+        <GeoCombobox
           id="city-input"
-          className="field-input"
           value={city}
-          onChange={e => { setCity(e.target.value); if (cityError) setCityError(false) }}
-          placeholder="Ej: Valladolid, Bogotá, Lima..."
-          autoComplete="off"
-          spellCheck={false}
-          aria-invalid={cityError}
-          style={{ ...FIELD_FONT, ...(cityError ? { borderColor: 'var(--danger)' } : {}) }}
+          onChange={v => { setCity(v); if (cityError) setCityError(false) }}
+          fetchSuggestions={fetchCities}
+          placeholder={region ? `Ciudades de ${region}...` : 'Escribe para buscar ciudades...'}
+          invalid={cityError}
         />
       </div>
 

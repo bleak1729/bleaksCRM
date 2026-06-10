@@ -74,6 +74,18 @@ export const saveData = (data: DataPayload) =>
 export const startSearch = (body: SearchParams) =>
   request<SearchResult>('/api/search', { method: 'POST', body })
 
+// Autocompletado de provincias/ciudades acotado por país (Places Autocomplete)
+export interface GeoSuggestion { name: string; detail: string }
+export const suggestGeo = (params: { type: 'region' | 'city'; country: string; region?: string; q: string }) => {
+  const qs = new URLSearchParams({
+    type: params.type,
+    country: params.country,
+    region: params.region || '',
+    q: params.q,
+  })
+  return request<{ suggestions: GeoSuggestion[] }>(`/api/geo/suggest?${qs}`)
+}
+
 // Genera el prompt para landing page en Claude.ai
 export const generateLandingPrompt = (leadId: string) =>
   request<{ prompt: string; lead: { name: string; sector: string; socials: Record<string, string> } }>(

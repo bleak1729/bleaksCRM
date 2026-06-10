@@ -1,6 +1,6 @@
 {
   "name": "vll-crm-v7",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "description": "VLL CRM — Prospector B2B Valladolid con React + Node.js",
   "main": "server.js",
   "scripts": {
