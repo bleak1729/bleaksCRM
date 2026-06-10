@@ -603,11 +603,33 @@ body {
 
 /* ══ CLIENTES ═══════════════════════════════════════════════════ */
 .cl-header { padding: 24px 32px 0; }
-.cl-list   { padding: 0 32px 32px; overflow-x: auto; }
+.cl-list   { padding: 0 32px 32px; }
+.cl-tabs   {
+  display: flex; gap: 4px;
+  background: var(--bg2); padding: 4px;
+  border-radius: var(--r2); border: 1px solid var(--bor2);
+  max-width: 100%; overflow-x: auto;
+}
+.cl-tabs > button { white-space: nowrap; flex-shrink: 0; }
+.cl-search { min-width: 200px; }
+.cl-table td:first-child { min-width: 180px; }
+
+/* Columnas de la tabla de clientes por anchura
+   (1 Cliente · 2 Contacto · 3 Servicios · 4 MRR · 5 Estado · 6 Inicio · 7 Proyectos · 8 Acciones) */
+@media (max-width: 1100px) {
+  .cl-table th:nth-child(6), .cl-table td:nth-child(6) { display: none; }                       /* Inicio */
+}
+@media (max-width: 900px) {
+  .cl-table th:nth-child(3), .cl-table td:nth-child(3) { display: none; }                       /* Servicios */
+}
 @media (max-width: 767px) {
   .cl-header { padding: 16px 12px 0; }
   .cl-list   { padding: 0 12px 20px; }
-  .cl-list table { min-width: 680px; }   /* la tabla de clientes scrollea horizontal */
+  .cl-search { flex: 1 1 100%; min-width: 0; }
+  .cl-table th:nth-child(2), .cl-table td:nth-child(2),                                         /* Contacto */
+  .cl-table th:nth-child(7), .cl-table td:nth-child(7) { display: none; }                       /* Proyectos */
+  .cl-table th, .cl-table td { padding: 10px 6px !important; }
+  .cl-table td:first-child { min-width: 0; }
 }
 
 /* ══ RESPONSIVE ═════════════════════════════════════════════════ */

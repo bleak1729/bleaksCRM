@@ -160,13 +160,13 @@ export default function CustomerList({ customers, projects, customerContacts, in
 
         {/* Filters + Search */}
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 12, flexWrap: 'wrap', paddingBottom: 16, borderBottom: '1px solid var(--bor2)' }}>
-          <div style={{ display: 'flex', gap: 4, background: 'var(--bg2)', padding: 4, borderRadius: 'var(--r2)', border: '1px solid var(--bor2)' }}>
+          <div className="cl-tabs">
             <FilterTab label="Todos"     count={counts.all}       active={filter === 'all'}       onClick={() => setFilter('all')} />
             <FilterTab label="Activos"   count={counts.activo}    active={filter === 'activo'}    onClick={() => setFilter('activo')} />
             <FilterTab label="Pausados"  count={counts.pausado}   active={filter === 'pausado'}   onClick={() => setFilter('pausado')} />
             <FilterTab label="Cancelados" count={counts.cancelado} active={filter === 'cancelado'} onClick={() => setFilter('cancelado')} />
           </div>
-          <div style={{ position: 'relative', minWidth: 200 }}>
+          <div className="cl-search" style={{ position: 'relative' }}>
             <Search size={14} style={{ position: 'absolute', left: 10, top: '50%', transform: 'translateY(-50%)', color: 'var(--txt3)', pointerEvents: 'none' }}/>
             <input value={query} onChange={e => setQuery(e.target.value)}
               placeholder="Buscar cliente…"
@@ -184,7 +184,7 @@ export default function CustomerList({ customers, projects, customerContacts, in
         </div>
       ) : (
         <div className="cl-list" style={{ flex: 1, overflowY: 'auto' }}>
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16 }}>
+          <table className="cl-table" style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--bor2)' }}>
                 {['Cliente', 'Contacto', 'Servicios', 'MRR', 'Estado', 'Inicio', 'Proyectos', ''].map(h => (
@@ -200,7 +200,7 @@ export default function CustomerList({ customers, projects, customerContacts, in
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
                 >
                   {/* Cliente */}
-                  <td style={{ padding: '12px 12px', minWidth: 180 }}>
+                  <td style={{ padding: '12px 12px' }}>
                     <div style={{ fontWeight: 600, fontSize: 13, color: 'var(--txt)', fontFamily: 'var(--fb)' }}>{c.name}</div>
                     {c.sector && <div style={{ fontSize: 11, color: 'var(--txt3)', marginTop: 1 }}>{c.sector}</div>}
                   </td>
