@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from 'react'
 import { createPortal } from 'react-dom'
-import { X, Building2, ExternalLink, Download, ExternalLink as LinkIcon, Star } from 'lucide-react'
+import { X, Building2, ExternalLink, Download, ExternalLink as LinkIcon } from 'lucide-react'
 import { Input }    from '@/components/ui/input'
 import { Label }    from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -70,7 +70,7 @@ const fmtDate = (d?: string | null) =>
 type Tab = 'contrato' | 'contactos' | 'facturas' | 'docs'
 
 /* ── Tab button ──────────────────────────────────────────────────── */
-function TabBtn({ id, label, count, active, onClick }: { id: Tab; label: string; count?: number; active: boolean; onClick: () => void }) {
+function TabBtn({ label, count, active, onClick }: { id: Tab; label: string; count?: number; active: boolean; onClick: () => void }) {
   return (
     <button onClick={onClick} style={{
       padding: '6px 10px', fontSize: 12, fontWeight: active ? 700 : 500,
@@ -103,11 +103,6 @@ export default function CustomerModal({
   const [editContact,  setEditContact]  = useState<(Partial<CustomerContact> & { customer_id: string }) | null>(null)
   const [editInvoice,  setEditInvoice]  = useState<(Partial<Invoice> & { customer_id: string }) | null>(null)
   const [editDocument, setEditDocument] = useState<(Partial<Document> & { customer_id: string }) | null>(null)
-
-  useEffect(() => {
-    setForm(customer ? { ...DEFAULT, ...customer } : DEFAULT)
-    setErrors({})
-  }, [customer])
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => { if (e.key === 'Escape' && !editContact && !editInvoice && !editDocument) onClose() }
@@ -508,6 +503,7 @@ export default function CustomerModal({
       {/* Sub-modals */}
       {editContact && (
         <ContactModal
+          key={editContact.id || 'new'}
           contact={editContact}
           onSave={c => { onSaveContact?.(c); setEditContact(null) }}
           onClose={() => setEditContact(null)}
@@ -515,6 +511,7 @@ export default function CustomerModal({
       )}
       {editInvoice && (
         <InvoiceModal
+          key={editInvoice.id || 'new'}
           invoice={editInvoice}
           onSave={inv => { onSaveInvoice?.(inv); setEditInvoice(null) }}
           onClose={() => setEditInvoice(null)}
@@ -522,6 +519,7 @@ export default function CustomerModal({
       )}
       {editDocument && (
         <DocumentModal
+          key={editDocument.id || 'new'}
           document={editDocument}
           onSave={d => { onSaveDocument?.(d); setEditDocument(null) }}
           onClose={() => setEditDocument(null)}

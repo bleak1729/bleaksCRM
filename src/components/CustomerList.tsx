@@ -83,7 +83,7 @@ function EmptyState({ onAdd }: { onAdd: () => void }) {
 }
 
 /* ── Main component ──────────────────────────────────────────────── */
-export default function CustomerList({ customers, projects, customerContacts, invoices, documents, onSave, onDelete, onSaveProject, onDeleteProject, onSaveContact, onDeleteContact, onSaveInvoice, onDeleteInvoice, onSaveDocument, onDeleteDocument, onViewLead }: Props) {
+export default function CustomerList({ customers, projects, customerContacts, invoices, documents, onSave, onDelete, onSaveProject, onSaveContact, onDeleteContact, onSaveInvoice, onDeleteInvoice, onSaveDocument, onDeleteDocument, onViewLead }: Props) {
   const [filter,        setFilter]        = useState('all')
   const [query,         setQuery]         = useState('')
   const [editCustomer,  setEditCustomer]  = useState<Customer | null>(null)
@@ -276,6 +276,7 @@ export default function CustomerList({ customers, projects, customerContacts, in
       {/* ── CustomerModal ─────────────────────────────────────── */}
       {showModal && editCustomer && (
         <CustomerModal
+          key={editCustomer.id || 'new'}
           customer={editCustomer}
           projects={projects}
           customerContacts={customerContacts}
@@ -300,6 +301,7 @@ export default function CustomerList({ customers, projects, customerContacts, in
       {/* ── ProjectModal ──────────────────────────────────────── */}
       {editProject && (
         <ProjectModal
+          key={editProject.id || 'new'}
           project={editProject}
           onSave={p => { onSaveProject(p); setEditProject(null) }}
           onClose={() => setEditProject(null)}

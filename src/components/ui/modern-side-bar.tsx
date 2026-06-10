@@ -6,7 +6,6 @@ import {
   Menu, X, LogOut, Wifi, WifiOff, Search, Settings,
   ChevronDown, Building2, KeyRound,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
 /* ── Tipos ────────────────────────────────────────────────────── */
@@ -86,7 +85,7 @@ function SectionHeader({
 
 /* ── Nav sub-item ────────────────────────────────────────────── */
 function NavItem({
-  id, icon, label, soon, active, collapsed,
+  icon, label, soon, active, collapsed,
   onClick,
 }: {
   id: string; icon: React.ReactNode; label: string;

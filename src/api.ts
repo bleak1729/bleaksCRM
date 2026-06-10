@@ -32,9 +32,12 @@ async function request<T>(path: string, { method = 'GET', body, auth = true }: R
   })
 
   if (auth && r.status === 401) {
+    // Solo recargar si había una sesión que caducó: tras clearToken() un
+    // segundo 401 ya no tiene token y no recarga (evita bucles de reload)
+    const hadToken = !!getToken()
     clearToken()
     localStorage.removeItem(USER_KEY)
-    window.location.reload()
+    if (hadToken) window.location.reload()
     throw new Error('Sesión expirada')
   }
 

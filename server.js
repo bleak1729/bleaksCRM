@@ -12,6 +12,9 @@ const app = express();
 app.set('trust proxy', 1);
 
 app.use(express.json({ limit: '10mb' }));
+// Express 5 deja req.body undefined si no llega JSON; las rutas destructuran
+// req.body directamente, así que restauramos el {} de Express 4
+app.use((req, _res, next) => { if (req.body === undefined) req.body = {}; next(); });
 app.use(express.static(path.join(__dirname, 'dist')));
 app.get(/^(?!\/api).*/, (_req, res, next) => {
   const idx = path.join(__dirname, 'dist', 'index.html');
@@ -37,6 +40,13 @@ app.use('/api/landing',  require('./routes/landing'));
 app.use('/api/analyze',  require('./routes/analyze'));
 app.use('/api/invoices', require('./routes/invoices'));
 app.use('/api',          require('./routes/crm'));   // customers, projects, customer-contacts, documents
+
+// Errores no controlados → JSON, nunca la página HTML de Express con stack trace
+app.use((err, req, res, _next) => {
+  console.error(err);
+  if (res.headersSent) return;
+  res.status(err.status || 500).json({ error: err.expose ? err.message : 'Error interno del servidor' });
+});
 
 // ── EXPORT para Vercel serverless / START para desarrollo local ───────────────
 module.exports = app;

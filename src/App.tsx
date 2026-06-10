@@ -107,8 +107,11 @@ export default function App() {
     setTheme(t => t === 'dark' ? 'light' : 'dark')
   }, [])
 
-  // ── Load on mount ──────────────────────────────────────────────
+  // ── Load on login / mount con sesión ──────────────────────────
   useEffect(() => {
+    // Sin sesión no hay nada que cargar (y evita 401 en cadena en el login)
+    if (!authUser) return
+
     // Leads: crítico — fallo aquí sí bloquea
     loadData()
       .then(d => {
@@ -129,7 +132,7 @@ export default function App() {
     getHealth()
       .then(setHealth)
       .catch(() => setHealth({ ok: false }))
-  }, [])
+  }, [authUser])
 
   // ── Toast ──────────────────────────────────────────────────────
   const toastTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined)

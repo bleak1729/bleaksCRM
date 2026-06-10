@@ -29,13 +29,8 @@ const DEFAULT: Omit<Project, 'customer_id'> = {
 
 export default function ProjectModal({ project, onSave, onClose }: Props) {
   const isNew = !project.id
-  const [form, setForm] = useState<Project>({ ...DEFAULT, ...project } as Project)
+  const [form, setForm] = useState<Project>(() => ({ ...DEFAULT, ...project }) as Project)
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  useEffect(() => {
-    setForm({ ...DEFAULT, ...project } as Project)
-    setErrors({})
-  }, [project])
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }

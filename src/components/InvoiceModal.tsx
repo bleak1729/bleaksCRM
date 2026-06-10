@@ -59,11 +59,6 @@ export default function InvoiceModal({ invoice, onSave, onClose }: Props) {
   const [errors, setErrors] = useState<Record<string, string>>({})
 
   useEffect(() => {
-    setForm({ ...DEFAULT, ...invoice, line_items: initItems(invoice) } as Invoice)
-    setErrors({})
-  }, [invoice])
-
-  useEffect(() => {
     const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
     window.addEventListener('keydown', fn)
     return () => window.removeEventListener('keydown', fn)

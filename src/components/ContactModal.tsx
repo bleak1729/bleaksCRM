@@ -18,13 +18,8 @@ const DEFAULT = { name: '', role: '', email: '', phone: '', is_primary: false, n
 
 export default function ContactModal({ contact, onSave, onClose }: Props) {
   const isNew = !contact.id
-  const [form, setForm] = useState<CustomerContact>({ ...DEFAULT, ...contact } as CustomerContact)
+  const [form, setForm] = useState<CustomerContact>(() => ({ ...DEFAULT, ...contact }) as CustomerContact)
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  useEffect(() => {
-    setForm({ ...DEFAULT, ...contact } as CustomerContact)
-    setErrors({})
-  }, [contact])
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }

@@ -8,7 +8,6 @@ import { analyzeLead, findSocial } from '../api'
 import LandingPromptModal from './LandingPromptModal'
 import { Badge }      from '@/components/ui/badge'
 import { Button }     from '@/components/ui/button'
-import { Card, CardContent } from '@/components/ui/card'
 import { Input }      from '@/components/ui/input'
 import { Label }      from '@/components/ui/label'
 import {
@@ -16,7 +15,6 @@ import {
 } from '@/components/ui/select'
 import { Separator }  from '@/components/ui/separator'
 import { Textarea }   from '@/components/ui/textarea'
-import { cn }         from '@/lib/utils'
 
 /* ── Types ──────────────────────────────────────────────────────── */
 interface Lead {

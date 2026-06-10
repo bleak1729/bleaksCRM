@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import {
-  Users, TrendingUp, Phone, Globe, Mail, Star,
+  Users, TrendingUp, Globe, Star,
   AlertTriangle, Zap, Target, CheckCircle2, Clock,
   XCircle, ArrowRight, BarChart3, MapPin, Building2, Euro,
 } from 'lucide-react'
@@ -88,7 +88,7 @@ function LeadRow({ lead, badge, badgeVariant }: { lead: Lead; badge?: string; ba
 }
 
 /* ── Dashboard ──────────────────────────────────────────────────── */
-export default function Dashboard({ leads, statuses, contacts, customers = [], onNavigate }: Props) {
+export default function Dashboard({ leads, statuses, customers = [], onNavigate }: Props) {
 
   const m = useMemo(() => {
     const total        = leads.length

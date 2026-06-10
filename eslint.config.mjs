@@ -15,7 +15,7 @@ export default tseslint.config(
       globals: { ...globals.node },
     },
     rules: {
-      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }],
+      'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none', ignoreRestSiblings: true }],
     },
   },
 
@@ -29,13 +29,8 @@ export default tseslint.config(
     },
     rules: {
       ...reactHooks.configs.recommended.rules,
-      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none' }],
+      '@typescript-eslint/no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_', caughtErrors: 'none', ignoreRestSiblings: true }],
       '@typescript-eslint/no-explicit-any': 'off',
-      // Patrones preexistentes en los modales (reset de formularios en useEffect)
-      // y en la tabla (subcomponentes locales): válidos aquí, pero conviene
-      // revisarlos — por eso warning y no error
-      'react-hooks/set-state-in-effect': 'warn',
-      'react-hooks/static-components': 'warn',
     },
   },
 )

@@ -122,6 +122,20 @@ function SortIcon({ active, dir }: { active: boolean; dir: SortDir }) {
     : <ArrowDown size={12} className="ml-1 inline" style={{ color: 'var(--ac)' }}/>
 }
 
+const HEAD_STYLE: React.CSSProperties = { fontFamily: 'var(--fd)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '.05em', fontWeight: 700, color: 'var(--txt2)', padding: '14px 20px' }
+
+function Col({ col, sortCol, sortDir, onSort, children }: { col: SortCol; sortCol: SortCol; sortDir: SortDir; onSort: (c: SortCol) => void; children: React.ReactNode }) {
+  return (
+    <TableHead className="cursor-pointer select-none" onClick={() => onSort(col)} style={HEAD_STYLE}>
+      {children}<SortIcon active={sortCol === col} dir={sortDir}/>
+    </TableHead>
+  )
+}
+
+function StaticHead({ children }: { children: React.ReactNode }) {
+  return <TableHead style={HEAD_STYLE}>{children}</TableHead>
+}
+
 export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead, onEdit, onDelete, onExportCSV, onExportJSON, onImport }: Props) {
   const [search,      setSearch]      = useState('')
   const [sortCol,     setSortCol]     = useState<SortCol>('name')
@@ -180,23 +194,7 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
       if (av > bv) return sortDir === 'asc' ? 1 : -1
       return 0
     })
-  }, [leads, statuses, search, sortCol, sortDir])
-
-  const Col = ({ col, children }: { col: SortCol; children: React.ReactNode }) => (
-    <TableHead
-      className="cursor-pointer select-none"
-      onClick={() => handleSort(col)}
-      style={{ fontFamily: 'var(--fd)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '.05em', fontWeight: 700, color: 'var(--txt2)', padding: '14px 20px' }}
-    >
-      {children}<SortIcon active={sortCol === col} dir={sortDir}/>
-    </TableHead>
-  )
-
-  const StaticHead = ({ children }: { children: React.ReactNode }) => (
-    <TableHead style={{ fontFamily: 'var(--fd)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '.05em', fontWeight: 700, color: 'var(--txt2)', padding: '14px 20px' }}>
-      {children}
-    </TableHead>
-  )
+  }, [leads, statuses, filter, search, sortCol, sortDir])
 
   return (
     <>
@@ -428,14 +426,14 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
         <Table>
           <TableHeader>
             <TableRow style={{ borderBottom: '1px solid var(--bor2)', background: 'var(--bg3)' }}>
-              <Col col="name">Negocio</Col>
-              <Col col="sector">Sector</Col>
+              <Col col="name" sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Negocio</Col>
+              <Col col="sector" sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Sector</Col>
               <StaticHead>Teléfono</StaticHead>
               <StaticHead>Web</StaticHead>
               <StaticHead>Redes</StaticHead>
-              <Col col="priority">Prioridad</Col>
-              <Col col="status">Estado</Col>
-              <Col col="rating">Rating</Col>
+              <Col col="priority" sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Prioridad</Col>
+              <Col col="status" sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Estado</Col>
+              <Col col="rating" sortCol={sortCol} sortDir={sortDir} onSort={handleSort}>Rating</Col>
               <TableHead style={{ fontFamily: 'var(--fd)', fontSize: '11px', textTransform: 'uppercase', letterSpacing: '.05em', fontWeight: 700, color: 'var(--txt2)', padding: '14px 20px', textAlign: 'right' }}>
                 Acciones
               </TableHead>

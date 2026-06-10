@@ -68,7 +68,7 @@ export default function Login({ onSuccess }: Props) {
     setLoading(true)
     try {
       if (isSetup) {
-        const { token, username: user, recoveryKey: rk } = await setupAccount(username, password)
+        const { token, recoveryKey: rk } = await setupAccount(username, password)
         saveToken(token)
         setSetupKey(rk)
         // onSuccess se llama cuando el usuario cierra el modal de la clave

@@ -28,13 +28,8 @@ const DEFAULT: Omit<Document, 'customer_id'> = {
 
 export default function DocumentModal({ document, onSave, onClose }: Props) {
   const isNew = !document.id
-  const [form, setForm] = useState<Document>({ ...DEFAULT, ...document } as Document)
+  const [form, setForm] = useState<Document>(() => ({ ...DEFAULT, ...document }) as Document)
   const [errors, setErrors] = useState<Record<string, string>>({})
-
-  useEffect(() => {
-    setForm({ ...DEFAULT, ...document } as Document)
-    setErrors({})
-  }, [document])
 
   useEffect(() => {
     const fn = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose() }
