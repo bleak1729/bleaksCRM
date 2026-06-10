@@ -113,7 +113,7 @@ export default function NewLeadModal({ onSave, onClose }: Props) {
           </div>
 
           {/* Sector + Prioridad */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="form-grid-2" style={{ gap: 12 }}>
             <div>
               {lbl('Sector')}
               <Select value={sector} onValueChange={setSector}>
@@ -143,7 +143,7 @@ export default function NewLeadModal({ onSave, onClose }: Props) {
           <Separator />
 
           {/* Web + Teléfono */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="form-grid-2" style={{ gap: 12 }}>
             <div>
               {lbl('Sitio web')}
               <Input value={url} onChange={e => setUrl(e.target.value)}
@@ -157,7 +157,7 @@ export default function NewLeadModal({ onSave, onClose }: Props) {
           </div>
 
           {/* Email + Dirección */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+          <div className="form-grid-2" style={{ gap: 12 }}>
             <div>
               {lbl('Email')}
               <Input value={email} onChange={e => setEmail(e.target.value)}

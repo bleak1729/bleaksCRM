@@ -78,7 +78,7 @@ export default function ContactModal({ contact, onSave, onClose }: Props) {
             <Input id="ct-role" value={form.role} onChange={e => set('role', e.target.value)} placeholder="CEO, Marketing, Técnico…" />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div className="form-grid-2">
             <div>
               <Label htmlFor="ct-email">Email</Label>
               <Input id="ct-email" type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="correo@…" />

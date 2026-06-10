@@ -488,7 +488,7 @@ export default function App() {
       />
 
       {/* ── CONTENIDO PRINCIPAL ─────────────────────────────────── */}
-      <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', minWidth: 0, background: 'var(--bg)' }}>
+      <div className="main-content" style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', minWidth: 0, background: 'var(--bg)' }}>
 
         {activeNav === 'dashboard' ? (
           /* ── DASHBOARD ───────────────────────────────────────── */

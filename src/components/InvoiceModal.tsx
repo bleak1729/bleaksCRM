@@ -131,7 +131,7 @@ export default function InvoiceModal({ invoice, onSave, onClose }: Props) {
         <div style={{ padding: '20px 24px', overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: 16 }}>
 
           {/* Número + Estado + Fechas */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
+          <div className="form-grid-3">
             {/* Número */}
             <div>
               <Label>Número</Label>
@@ -185,7 +185,7 @@ export default function InvoiceModal({ invoice, onSave, onClose }: Props) {
 
             <div style={{ marginTop: 8, border: '1px solid var(--bor2)', borderRadius: 'var(--r2)', overflow: 'hidden' }}>
               {/* Cabecera */}
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 70px 100px 90px 32px', background: 'var(--bg3)', borderBottom: '1px solid var(--bor2)' }}>
+              <div className="line-items-grid" style={{ background: 'var(--bg3)', borderBottom: '1px solid var(--bor2)' }}>
                 {['Descripción', 'Cant.', 'P. Unitario', 'Total', ''].map((h, i) => (
                   <div key={i} style={{ padding: '7px 10px', fontSize: 10, fontWeight: 700, color: 'var(--txt3)', textTransform: 'uppercase', letterSpacing: '.06em', fontFamily: 'var(--fd)', textAlign: i >= 2 ? 'right' : 'left' }}>
                     {h}
@@ -198,7 +198,8 @@ export default function InvoiceModal({ invoice, onSave, onClose }: Props) {
                 const lineTotal = (item.quantity || 0) * (item.unit_price || 0)
                 return (
                   <div key={idx}
-                    style={{ display: 'grid', gridTemplateColumns: '1fr 70px 100px 90px 32px', borderBottom: idx < form.line_items.length - 1 ? '1px solid var(--bor)' : 'none', alignItems: 'center' }}
+                    className="line-items-grid"
+                    style={{ borderBottom: idx < form.line_items.length - 1 ? '1px solid var(--bor)' : 'none', alignItems: 'center' }}
                   >
                     {/* Descripción */}
                     <div style={{ padding: '4px 6px 4px 8px' }}>

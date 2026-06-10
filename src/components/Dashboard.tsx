@@ -168,7 +168,7 @@ export default function Dashboard({ leads, statuses, customers = [], onNavigate 
   const today = new Date().toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })
 
   return (
-    <div style={{ padding: '28px 32px', overflowY: 'auto', flex: 1 }}>
+    <div className="dash-root" style={{ overflowY: 'auto', flex: 1 }}>
 
       {/* ── Header ───────────────────────────────────────────── */}
       <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 24, flexWrap: 'wrap', gap: 12 }}>
@@ -267,7 +267,7 @@ export default function Dashboard({ leads, statuses, customers = [], onNavigate 
       </div>
 
       {/* ── Row 2: Prioridad + Presencia digital + Sectores ──── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1.4fr', gap: 16, marginBottom: 24 }}>
+      <div className="dash-grid-main">
 
         {/* Prioridad */}
         <Section title="Por prioridad" icon={<Target size={13}/>}>
@@ -295,7 +295,7 @@ export default function Dashboard({ leads, statuses, customers = [], onNavigate 
       </div>
 
       {/* ── Row 3: Hot leads + Top rating + SaaS + Fallos ────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: 16, marginBottom: 24 }}>
+      <div className="dash-grid-4">
 
         {/* 🔥 Hot leads */}
         <Section title="Hot leads" icon={<AlertTriangle size={13}/>}>

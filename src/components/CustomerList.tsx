@@ -144,7 +144,7 @@ export default function CustomerList({ customers, projects, customerContacts, in
     <div style={{ display: 'flex', flexDirection: 'column', flex: 1, overflow: 'hidden', background: 'var(--bg)' }}>
 
       {/* ── Header ─────────────────────────────────────────────── */}
-      <div style={{ padding: '24px 32px 0', flexShrink: 0 }}>
+      <div className="cl-header" style={{ flexShrink: 0 }}>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: 20, flexWrap: 'wrap', gap: 12 }}>
           <div>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: 'var(--txt)', fontFamily: 'var(--fd)', letterSpacing: '-.02em', margin: 0 }}>Clientes</h1>
@@ -183,7 +183,7 @@ export default function CustomerList({ customers, projects, customerContacts, in
           Sin resultados para <em style={{ marginLeft: 4 }}>"{query}"</em>
         </div>
       ) : (
-        <div style={{ flex: 1, overflowY: 'auto', padding: '0 32px 32px' }}>
+        <div className="cl-list" style={{ flex: 1, overflowY: 'auto' }}>
           <table style={{ width: '100%', borderCollapse: 'collapse', marginTop: 16 }}>
             <thead>
               <tr style={{ borderBottom: '1px solid var(--bor2)' }}>

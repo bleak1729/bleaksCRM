@@ -168,7 +168,7 @@ export default function CustomerModal({
         </div>
 
         {/* ── Body ────────────────────────────────────────────── */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', flex: 1, overflow: 'hidden' }}>
+        <div className="cm-split" style={{ flex: 1 }}>
 
           {/* ── Col izquierda: información básica ── */}
           <div style={{ padding: '20px 24px', overflowY: 'auto', borderRight: '1px solid var(--bor2)' }}>
@@ -188,7 +188,7 @@ export default function CustomerModal({
                 <Label htmlFor="c-contact">Contacto principal</Label>
                 <Input id="c-contact" value={form.contact_name} onChange={e => set('contact_name', e.target.value)} placeholder="Nombre y cargo" />
               </div>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+              <div className="form-grid-2">
                 <div>
                   <Label htmlFor="c-email">Email</Label>
                   <Input id="c-email" type="email" value={form.email} onChange={e => set('email', e.target.value)} placeholder="correo@…" />
@@ -251,7 +251,7 @@ export default function CustomerModal({
                     </div>
                   </div>
                   {/* Fechas */}
-                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                  <div className="form-grid-2">
                     <div>
                       <Label htmlFor="c-start">Inicio contrato</Label>
                       <Input id="c-start" type="date" value={form.contract_start || ''} onChange={e => set('contract_start', e.target.value || null)} />

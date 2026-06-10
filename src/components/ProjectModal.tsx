@@ -87,7 +87,7 @@ export default function ProjectModal({ project, onSave, onClose }: Props) {
 
           <div>
             <Label>Estado</Label>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8, marginTop: 6 }}>
+            <div className="form-grid-2" style={{ gap: 8, marginTop: 6 }}>
               {STATUS_OPTIONS.map(opt => (
                 <button key={opt.value}
                   onClick={() => set('status', opt.value as Project['status'])}
@@ -109,7 +109,7 @@ export default function ProjectModal({ project, onSave, onClose }: Props) {
               placeholder="Descripción del proyecto…" rows={2} />
           </div>
 
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+          <div className="form-grid-2">
             <div>
               <Label htmlFor="p-start">Fecha inicio</Label>
               <Input id="p-start" type="date" value={form.start_date || ''}

@@ -733,7 +733,7 @@ export default function LeadTable({ leads, statuses, filter, onFilter, onNewLead
       {/* ── Paginación ──────────────────────────────────────────── */}
       {totalPages > 1 && (
         <div style={{
-          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, flexWrap: 'wrap',
           padding: '12px 20px', borderTop: '1px solid var(--bor2)', background: 'var(--bg2)',
         }}>
           <PageButton label="« Primera" disabled={safePage === 0} onClick={() => setPage(0)} />
