@@ -43,3 +43,12 @@ test('dedupeSuggestions elimina duplicados y entradas sin nombre', () => {
   ]);
   assert.equal(out.length, 2);
 });
+
+test('distanceKm calcula distancias reales', () => {
+  const { distanceKm } = require('../lib/geo');
+  const valladolid = { lat: 41.6523, lng: -4.7245 };
+  const madrid     = { lat: 40.4168, lng: -3.7038 };
+  const d = distanceKm(valladolid, madrid);
+  assert.ok(d > 150 && d < 175, `Valladolid-Madrid debería ser ~161 km, dio ${d}`);
+  assert.equal(distanceKm(valladolid, valladolid), 0);
+});

@@ -4,6 +4,7 @@ const { GOOGLE_API_KEY } = require('../lib/config');
 const { requireAuth } = require('../lib/auth');
 const { SECTOR_QUERIES, SECTOR_TYPES } = require('../lib/sector-data');
 const { mapPlaces } = require('../lib/leads');
+const { distanceKm } = require('../lib/geo');
 
 const router = express.Router();
 
@@ -149,11 +150,28 @@ router.post('/', requireAuth, async (req, res) => {
 
     // 5. Combinar Text Search + Nearby Search y deduplicar por place id
     const seen      = new Set();
-    const allPlaces = [...textResults.flat(), ...nearbyPlaces].filter(p => {
+    let   allPlaces = [...textResults.flat(), ...nearbyPlaces].filter(p => {
       if (seen.has(p.id)) return false;
       seen.add(p.id);
       return true;
     });
+
+    // 6. Hacer el radio estricto: locationBias del Text Search solo *prefiere*
+    //    resultados cercanos, no los limita. Filtramos por distancia real al
+    //    centro con un 10% de margen (no descartar negocios por unos metros).
+    //    Los lugares sin coordenadas se conservan — no se puede juzgar su distancia.
+    if (locationBias) {
+      const center = locationBias.circle.center;
+      const maxKm  = (locationBias.circle.radius / 1000) * 1.1;
+      allPlaces = allPlaces.filter(p => {
+        const loc = p.location;
+        if (!loc?.latitude || !loc?.longitude) return true;
+        return distanceKm(
+          { lat: center.latitude, lng: center.longitude },
+          { lat: loc.latitude,   lng: loc.longitude }
+        ) <= maxKm;
+      });
+    }
 
     const leads = mapPlaces(allPlaces, sector, { country, region, city });
     const label = queries[0] + ' en ' + placeLabel;
