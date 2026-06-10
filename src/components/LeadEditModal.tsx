@@ -21,6 +21,7 @@ interface Lead {
   id: string; name: string; sector: string; loc: string; url: string;
   phone: string; email?: string; priority: string; rating: number | null; reviews: number;
   flaws: string[]; saas: string[]; source: string;
+  country?: string; region?: string; city?: string;
   linkedin?: string; instagram?: string; facebook?: string; twitter?: string; tiktok?: string;
   [k: string]: unknown
 }
@@ -60,6 +61,9 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
   const [name,       setName]       = useState(lead.name)
   const [sector,     setSector]     = useState(lead.sector)
   const [loc,        setLoc]        = useState(lead.loc)
+  const [country,    setCountry]    = useState(lead.country ?? '')
+  const [region,     setRegion]     = useState(lead.region  ?? '')
+  const [city,       setCity]       = useState(lead.city    ?? '')
   const [url,        setUrl]        = useState(lead.url)
   const [phone,      setPhone]      = useState(lead.phone)
   const [email,      setEmail]      = useState(lead.email ?? '')
@@ -133,7 +137,7 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
 
   const handleSave = () =>
     onSave(lead.id, {
-      lead:    { name, sector, loc, url, phone, email, priority, flaws: curFlaws, saas: curSaas, linkedin, instagram, facebook, twitter, tiktok },
+      lead:    { name, sector, loc, url, phone, email, priority, country, region, city, flaws: curFlaws, saas: curSaas, linkedin, instagram, facebook, twitter, tiktok },
       status:  curStatus,
       note:    curNote,
       contact: curContact,
@@ -262,6 +266,41 @@ export default function LeadEditModal({ lead, status, contact, note, onSave, onC
                       className="mt-1.5"
                       style={{ fontFamily: 'var(--fb)' }}
                     />
+                  </div>
+                  <div className="col-span-2 grid grid-cols-3 gap-3">
+                    <div>
+                      <Label htmlFor="edit-country">País</Label>
+                      <Input
+                        id="edit-country"
+                        value={country}
+                        onChange={e => setCountry(e.target.value)}
+                        placeholder="España"
+                        className="mt-1.5"
+                        style={{ fontFamily: 'var(--fb)' }}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-region">Estado / Provincia</Label>
+                      <Input
+                        id="edit-region"
+                        value={region}
+                        onChange={e => setRegion(e.target.value)}
+                        placeholder="Valladolid"
+                        className="mt-1.5"
+                        style={{ fontFamily: 'var(--fb)' }}
+                      />
+                    </div>
+                    <div>
+                      <Label htmlFor="edit-city">Ciudad</Label>
+                      <Input
+                        id="edit-city"
+                        value={city}
+                        onChange={e => setCity(e.target.value)}
+                        placeholder="Valladolid"
+                        className="mt-1.5"
+                        style={{ fontFamily: 'var(--fb)' }}
+                      />
+                    </div>
                   </div>
                   <div className="col-span-2">
                     <Label htmlFor="edit-email">

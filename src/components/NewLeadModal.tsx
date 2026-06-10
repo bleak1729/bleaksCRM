@@ -25,6 +25,9 @@ export default function NewLeadModal({ onSave, onClose }: Props) {
   const [name,      setName]      = useState('')
   const [sector,    setSector]    = useState('')
   const [loc,       setLoc]       = useState('')
+  const [country,   setCountry]   = useState('España')
+  const [region,    setRegion]    = useState('')
+  const [city,      setCity]      = useState('')
   const [url,       setUrl]       = useState('')
   const [phone,     setPhone]     = useState('')
   const [email,     setEmail]     = useState('')
@@ -68,6 +71,9 @@ export default function NewLeadModal({ onSave, onClose }: Props) {
       source:   'manual',
       lat:      null,
       lng:      null,
+      country:  country.trim(),
+      region:   region.trim(),
+      city:     city.trim(),
     })
     onClose()
   }
@@ -167,6 +173,25 @@ export default function NewLeadModal({ onSave, onClose }: Props) {
               {lbl('Dirección')}
               <Input value={loc} onChange={e => setLoc(e.target.value)}
                 placeholder="C/ Ejemplo 1, Valladolid" style={{ fontFamily: 'var(--fb)' }} />
+            </div>
+          </div>
+
+          {/* País + Estado/Provincia + Ciudad */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 12 }}>
+            <div>
+              {lbl('País')}
+              <Input value={country} onChange={e => setCountry(e.target.value)}
+                placeholder="España" style={{ fontFamily: 'var(--fb)' }} />
+            </div>
+            <div>
+              {lbl('Estado / Provincia')}
+              <Input value={region} onChange={e => setRegion(e.target.value)}
+                placeholder="Valladolid" style={{ fontFamily: 'var(--fb)' }} />
+            </div>
+            <div>
+              {lbl('Ciudad')}
+              <Input value={city} onChange={e => setCity(e.target.value)}
+                placeholder="Valladolid" style={{ fontFamily: 'var(--fb)' }} />
             </div>
           </div>
 
