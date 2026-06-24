@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Sun, Moon,
   ChevronLeft, ChevronRight,
   Menu, X, LogOut, Wifi, WifiOff, Search, Settings,
-  ChevronDown, Building2, KeyRound, Calculator,
+  ChevronDown, Building2, KeyRound, Calculator, Receipt,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -340,12 +340,19 @@ export function Sidebar({
                 active={activeNav === 'finance-dashboard'}
                 onClick={() => onNavChange('finance-dashboard')}
               />
+              <NavItem
+                id="gastos" icon={<Receipt size={13}/>}
+                label="Gastos" collapsed={isCollapsed}
+                active={activeNav === 'gastos'}
+                onClick={() => onNavChange('gastos')}
+              />
             </div>
           )}
           {isCollapsed && (
             <>
               <NavItem id="calculadora"       icon={<Calculator size={14}/>}      label="Calculadora" collapsed active={activeNav === 'calculadora'}       onClick={() => onNavChange('calculadora')} />
               <NavItem id="finance-dashboard" icon={<LayoutDashboard size={14}/>} label="Dashboard"   collapsed active={activeNav === 'finance-dashboard'} onClick={() => onNavChange('finance-dashboard')} />
+              <NavItem id="gastos"            icon={<Receipt size={14}/>}          label="Gastos"      collapsed active={activeNav === 'gastos'}            onClick={() => onNavChange('gastos')} />
             </>
           )}
 

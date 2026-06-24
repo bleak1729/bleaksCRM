@@ -10,6 +10,7 @@ import NewLeadModal      from './components/NewLeadModal'
 import CustomerList           from './components/CustomerList'
 import CalculadoraPage        from './components/FreelanceCalculator/CalculadoraPage'
 import FinanceDashboard       from './components/FinanceDashboard'
+import ExpenseTracker         from './components/ExpenseTracker'
 import { getHealth, loadData, saveData, startSearch, getToken, clearToken,
          createCustomer, updateCustomer, deleteCustomer,
          loadCustomers, loadProjects, createProject, updateProject, deleteProject,
@@ -18,9 +19,12 @@ import { getHealth, loadData, saveData, startSearch, getToken, clearToken,
          loadDocuments, createDocument, updateDocument, deleteDocument,
          loadFinanceProjects, createFinanceProject, updateFinanceProject, deleteFinanceProject,
          loadFinanceExpenses, saveFinanceExpenses,
+         loadExpenseCategories, createExpenseCategory, updateExpenseCategory, deleteExpenseCategory,
+         loadExpenseRecords, createExpenseRecord, updateExpenseRecord, deleteExpenseRecord,
          regenerateRecoveryKey } from './api'
 import type { Lead, LeadContact, ContactsMap, NotesMap, StatusMap,
               Customer, Project, CustomerContact, Invoice, DocumentItem,
+              ExpenseCategory, ExpenseRecord,
               FinanceProject, FinanceExpenses,
               Health, SearchParams, SearchState } from './types'
 
@@ -80,6 +84,12 @@ export default function App() {
   const [documents,         setDocuments]         = useState<DocumentItem[]>([])
   const [financeProjects,   setFinanceProjects]   = useState<FinanceProject[]>([])
   const [financeExpenses,   setFinanceExpenses]   = useState<FinanceExpenses>({ alquiler: 400, alimentacion: 280, transporte: 80, suministros: 70, ocio: 100, formacion: 0, salud: 0, gestoria: 0, ahorro_obj: 200 })
+  const [expenseCategories, setExpenseCategories] = useState<ExpenseCategory[]>([])
+  const [expenseRecords,    setExpenseRecords]    = useState<ExpenseRecord[]>([])
+  const [expenseMonth,      setExpenseMonth]      = useState<string>(() => {
+    const now = new Date()
+    return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}`
+  })
   const [editModalLead,  setEditModalLead]  = useState<Lead | null>(null)
   const [showNewLead,    setShowNewLead]    = useState(false)
   const [health,        setHealth]       = useState<Health | null>(null)
@@ -136,6 +146,8 @@ export default function App() {
     loadInvoices().then(i => setInvoices(i || [])).catch(() => {})
     loadDocuments().then(d => setDocuments(d || [])).catch(() => {})
     loadFinanceProjects().then(p => setFinanceProjects(p || [])).catch(() => {})
+    loadExpenseCategories().then(c => setExpenseCategories(c || [])).catch(() => {})
+    loadExpenseRecords(expenseMonth).then(r => setExpenseRecords(r || [])).catch(() => {})
     loadFinanceExpenses().then(e => {
       if (e) {
         const { alquiler, alimentacion, transporte, suministros, ocio, formacion, salud, gestoria, ahorro_obj } = e as FinanceExpenses & Record<string, unknown>
@@ -335,7 +347,25 @@ export default function App() {
   const handleSaveFinanceProject = useCallback(async (data: Partial<FinanceProject>) => {
     const created = await createFinanceProject(data)
     setFinanceProjects(prev => [created, ...prev])
-    showToast('Proyecto guardado en finanzas')
+
+    // Si tiene cliente, crear también el proyecto en el CRM para que aparezca al editar el cliente
+    if (created.customer_id) {
+      const baseTotal  = (data.tarifa_hora ?? 0) * (data.horas_semana ?? 0) * (data.semanas ?? 0)
+      const irpfTotal  = baseTotal * ((data.irpf_pct ?? 0) / 100)
+      const cuotaTotal = (data.cuota_autonomos ?? 0) * ((data.semanas ?? 0) / 4.33)
+      const netoTotal  = baseTotal - irpfTotal - cuotaTotal
+      const crmProject = await createProject({
+        customer_id: created.customer_id,
+        name:        created.name,
+        description: `Proyecto freelance — ${data.tarifa_hora}€/h · ${data.horas_semana}h/sem · ${data.semanas} semanas · IRPF ${data.irpf_pct}%`,
+        status:      'activo',
+        start_date:  data.start_date ?? null,
+        value:       Math.round(netoTotal * 100) / 100,
+      })
+      setProjects(prev => [crmProject, ...prev])
+    }
+
+    showToast('Proyecto guardado en finanzas y CRM')
     return created
   }, [showToast])
 
@@ -356,6 +386,57 @@ export default function App() {
     const saved = await saveFinanceExpenses(data)
     setFinanceExpenses(saved)
     showToast('Gastos actualizados')
+  }, [showToast])
+
+  // ── Expense month change (reload records) ─────────────────────
+  const handleExpenseMonthChange = useCallback(async (month: string) => {
+    setExpenseMonth(month)
+    try {
+      const records = await loadExpenseRecords(month)
+      setExpenseRecords(records || [])
+    } catch { /* ignore */ }
+  }, [])
+
+  // ── Expense category handlers ──────────────────────────────────
+  const handleAddExpenseCategory = useCallback(async (data: Partial<ExpenseCategory>) => {
+    const created = await createExpenseCategory(data)
+    setExpenseCategories(prev => [...prev, created].sort((a, b) => a.name.localeCompare(b.name)))
+    showToast('Categoría añadida')
+    return created
+  }, [showToast])
+
+  const handleUpdateExpenseCategory = useCallback(async (id: string, data: Partial<ExpenseCategory>) => {
+    const updated = await updateExpenseCategory(id, data)
+    setExpenseCategories(prev => prev.map(c => c.id === id ? updated : c))
+    showToast('Categoría actualizada')
+    return updated
+  }, [showToast])
+
+  const handleDeleteExpenseCategory = useCallback(async (id: string) => {
+    await deleteExpenseCategory(id)
+    setExpenseCategories(prev => prev.filter(c => c.id !== id))
+    showToast('Categoría eliminada')
+  }, [showToast])
+
+  // ── Expense record handlers ────────────────────────────────────
+  const handleAddExpenseRecord = useCallback(async (data: Partial<ExpenseRecord>) => {
+    const created = await createExpenseRecord(data)
+    setExpenseRecords(prev => [created, ...prev])
+    showToast('Gasto registrado')
+    return created
+  }, [showToast])
+
+  const handleUpdateExpenseRecord = useCallback(async (id: string, data: Partial<ExpenseRecord>) => {
+    const updated = await updateExpenseRecord(id, data)
+    setExpenseRecords(prev => prev.map(r => r.id === id ? updated : r))
+    showToast('Gasto actualizado')
+    return updated
+  }, [showToast])
+
+  const handleDeleteExpenseRecord = useCallback(async (id: string) => {
+    await deleteExpenseRecord(id)
+    setExpenseRecords(prev => prev.filter(r => r.id !== id))
+    showToast('Gasto eliminado')
   }, [showToast])
 
   // ── Document handlers ──────────────────────────────────────────
@@ -564,6 +645,21 @@ export default function App() {
             onUpdateProject={handleUpdateFinanceProject}
             onDeleteProject={handleDeleteFinanceProject}
             onSaveExpenses={handleSaveFinanceExpenses}
+          />
+        ) : activeNav === 'gastos' ? (
+          /* ── FINANZAS: GASTOS ────────────────────────────────── */
+          <ExpenseTracker
+            categories={expenseCategories}
+            records={expenseRecords}
+            financeProjects={financeProjects}
+            selectedMonth={expenseMonth}
+            onMonthChange={handleExpenseMonthChange}
+            onAddCategory={handleAddExpenseCategory}
+            onUpdateCategory={handleUpdateExpenseCategory}
+            onDeleteCategory={handleDeleteExpenseCategory}
+            onAddRecord={handleAddExpenseRecord}
+            onUpdateRecord={handleUpdateExpenseRecord}
+            onDeleteRecord={handleDeleteExpenseRecord}
           />
         ) : activeNav === 'clientes' ? (
           /* ── CLIENTES ────────────────────────────────────────── */

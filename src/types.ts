@@ -135,6 +135,7 @@ export interface FinanceProject {
   semanas:          number
   cuota_autonomos:  number
   irpf_pct:         number
+  start_date?:      string | null
   created_at?:      string
   customers?:       { id: string; name: string } | null
 }
@@ -149,6 +150,23 @@ export interface FinanceExpenses {
   salud:        number
   gestoria:     number
   ahorro_obj:   number
+}
+
+export interface ExpenseCategory {
+  id?:        string
+  name:       string
+  color:      string
+  created_at?: string
+}
+
+export interface ExpenseRecord {
+  id?:                string
+  category_id:        string | null
+  amount:             number
+  description:        string
+  expense_date:       string
+  created_at?:        string
+  expense_categories?: { id: string; name: string; color: string } | null
 }
 
 export interface Health {

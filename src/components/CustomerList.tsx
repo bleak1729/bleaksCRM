@@ -240,7 +240,7 @@ export default function CustomerList({ customers, projects, customerContacts, in
                   {/* Proyectos */}
                   <td style={{ padding: '12px 12px' }}>
                     <button
-                      onClick={() => setEditProject({ customer_id: c.id!, name: '', description: '', status: 'activo', value: 0, start_date: null, end_date: null })}
+                      onClick={() => openEdit(c)}
                       style={{ display: 'inline-flex', alignItems: 'center', gap: 5, fontSize: 12, color: 'var(--txt2)', background: 'var(--bg2)', border: '1px solid var(--bor2)', borderRadius: 'var(--r2)', padding: '4px 8px', cursor: 'pointer', fontFamily: 'var(--fb)' }}
                     >
                       <FolderKanban size={12}/>

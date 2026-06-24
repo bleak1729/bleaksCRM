@@ -2,6 +2,7 @@
 
 import type {
   Customer, CustomerContact, DataPayload, DocumentItem,
+  ExpenseCategory, ExpenseRecord,
   FinanceExpenses, FinanceProject,
   Health, Invoice, Project, SearchParams, SearchResult,
 } from './types'
@@ -150,6 +151,18 @@ export const deleteFinanceProject = (id: string)                                
 // ── Finance Expenses ──────────────────────────────────────────────
 export const loadFinanceExpenses  = ()                                          => request<FinanceExpenses>('/api/finance/expenses')
 export const saveFinanceExpenses  = (data: Partial<FinanceExpenses>)            => request<FinanceExpenses>('/api/finance/expenses', { method: 'PUT', body: data })
+
+// ── Expense Categories ────────────────────────────────────────────
+export const loadExpenseCategories  = ()                                              => request<ExpenseCategory[]>('/api/finance/expense-categories')
+export const createExpenseCategory  = (data: Partial<ExpenseCategory>)               => request<ExpenseCategory>('/api/finance/expense-categories', { method: 'POST', body: data })
+export const updateExpenseCategory  = (id: string, data: Partial<ExpenseCategory>)   => request<ExpenseCategory>(`/api/finance/expense-categories/${id}`, { method: 'PUT', body: data })
+export const deleteExpenseCategory  = (id: string)                                   => request<{ ok: boolean }>(`/api/finance/expense-categories/${id}`, { method: 'DELETE' })
+
+// ── Expense Records ───────────────────────────────────────────────
+export const loadExpenseRecords     = (month?: string)                                => request<ExpenseRecord[]>(`/api/finance/expense-records${month ? `?month=${month}` : ''}`)
+export const createExpenseRecord    = (data: Partial<ExpenseRecord>)                 => request<ExpenseRecord>('/api/finance/expense-records', { method: 'POST', body: data })
+export const updateExpenseRecord    = (id: string, data: Partial<ExpenseRecord>)     => request<ExpenseRecord>(`/api/finance/expense-records/${id}`, { method: 'PUT', body: data })
+export const deleteExpenseRecord    = (id: string)                                   => request<{ ok: boolean }>(`/api/finance/expense-records/${id}`, { method: 'DELETE' })
 
 // ── Documents ─────────────────────────────────────────────────────
 export const loadDocuments  = (customerId?: string)                     => request<DocumentItem[]>(`/api/documents${customerId ? `?customer_id=${customerId}` : ''}`)
