@@ -2,6 +2,7 @@
 
 import type {
   Customer, CustomerContact, DataPayload, DocumentItem,
+  FinanceExpenses, FinanceProject,
   Health, Invoice, Project, SearchParams, SearchResult,
 } from './types'
 
@@ -139,6 +140,16 @@ export const downloadInvoicePdf = (id: string) => {
     })
     .catch(() => { /* el botón de la UI ya muestra el estado */ })
 }
+
+// ── Finance Projects ──────────────────────────────────────────────
+export const loadFinanceProjects  = ()                                          => request<FinanceProject[]>('/api/finance/projects')
+export const createFinanceProject = (data: Partial<FinanceProject>)             => request<FinanceProject>('/api/finance/projects', { method: 'POST', body: data })
+export const updateFinanceProject = (id: string, data: Partial<FinanceProject>) => request<FinanceProject>(`/api/finance/projects/${id}`, { method: 'PUT', body: data })
+export const deleteFinanceProject = (id: string)                                => request<{ ok: boolean }>(`/api/finance/projects/${id}`, { method: 'DELETE' })
+
+// ── Finance Expenses ──────────────────────────────────────────────
+export const loadFinanceExpenses  = ()                                          => request<FinanceExpenses>('/api/finance/expenses')
+export const saveFinanceExpenses  = (data: Partial<FinanceExpenses>)            => request<FinanceExpenses>('/api/finance/expenses', { method: 'PUT', body: data })
 
 // ── Documents ─────────────────────────────────────────────────────
 export const loadDocuments  = (customerId?: string)                     => request<DocumentItem[]>(`/api/documents${customerId ? `?customer_id=${customerId}` : ''}`)

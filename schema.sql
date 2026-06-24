@@ -197,6 +197,37 @@ ALTER TABLE leads ADD COLUMN IF NOT EXISTS region  TEXT NOT NULL DEFAULT '';
 ALTER TABLE leads ADD COLUMN IF NOT EXISTS city    TEXT NOT NULL DEFAULT '';
 CREATE INDEX IF NOT EXISTS idx_leads_geo ON leads(country, region, city);
 
+-- ── Módulo Finanzas ─────────────────────────────────────────────
+CREATE TABLE IF NOT EXISTS finance_projects (
+  id               UUID        PRIMARY KEY DEFAULT gen_random_uuid(),
+  customer_id      UUID        REFERENCES customers(id) ON DELETE SET NULL,
+  name             TEXT        NOT NULL DEFAULT '',
+  tarifa_hora      NUMERIC(10,2) NOT NULL DEFAULT 28,
+  horas_semana     NUMERIC(10,2) NOT NULL DEFAULT 16,
+  semanas          NUMERIC(10,2) NOT NULL DEFAULT 12,
+  cuota_autonomos  NUMERIC(10,2) NOT NULL DEFAULT 88,
+  irpf_pct         NUMERIC(5,2)  NOT NULL DEFAULT 15,
+  created_at       TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+CREATE INDEX IF NOT EXISTS idx_finance_projects_customer ON finance_projects(customer_id);
+ALTER TABLE finance_projects ENABLE ROW LEVEL SECURITY;
+
+CREATE TABLE IF NOT EXISTS finance_expenses (
+  id           INTEGER     PRIMARY KEY DEFAULT 1,
+  alquiler     NUMERIC(10,2) NOT NULL DEFAULT 400,
+  alimentacion NUMERIC(10,2) NOT NULL DEFAULT 280,
+  transporte   NUMERIC(10,2) NOT NULL DEFAULT 80,
+  suministros  NUMERIC(10,2) NOT NULL DEFAULT 70,
+  ocio         NUMERIC(10,2) NOT NULL DEFAULT 100,
+  formacion    NUMERIC(10,2) NOT NULL DEFAULT 0,
+  salud        NUMERIC(10,2) NOT NULL DEFAULT 0,
+  gestoria     NUMERIC(10,2) NOT NULL DEFAULT 0,
+  ahorro_obj   NUMERIC(10,2) NOT NULL DEFAULT 200,
+  updated_at   TIMESTAMPTZ NOT NULL DEFAULT NOW()
+);
+ALTER TABLE finance_expenses ENABLE ROW LEVEL SECURITY;
+INSERT INTO finance_expenses (id) VALUES (1) ON CONFLICT (id) DO NOTHING;
+
 -- ── Vista útil para análisis ──────────────────────────────────────
 CREATE OR REPLACE VIEW leads_summary AS
 SELECT

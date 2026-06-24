@@ -40,6 +40,7 @@ app.use('/api/social',   require('./routes/social'));
 app.use('/api/landing',  require('./routes/landing'));
 app.use('/api/analyze',  require('./routes/analyze'));
 app.use('/api/invoices', require('./routes/invoices'));
+app.use('/api/finance',  require('./routes/finance')); // finance_projects, finance_expenses
 app.use('/api',          require('./routes/crm'));   // customers, projects, customer-contacts, documents
 
 // Errores no controlados → JSON, nunca la página HTML de Express con stack trace

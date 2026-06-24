@@ -334,10 +334,19 @@ export function Sidebar({
                 active={activeNav === 'calculadora'}
                 onClick={() => onNavChange('calculadora')}
               />
+              <NavItem
+                id="finance-dashboard" icon={<LayoutDashboard size={13}/>}
+                label="Dashboard" collapsed={isCollapsed}
+                active={activeNav === 'finance-dashboard'}
+                onClick={() => onNavChange('finance-dashboard')}
+              />
             </div>
           )}
           {isCollapsed && (
-            <NavItem id="calculadora" icon={<Calculator size={14}/>} label="Calculadora" collapsed active={activeNav === 'calculadora'} onClick={() => onNavChange('calculadora')} />
+            <>
+              <NavItem id="calculadora"       icon={<Calculator size={14}/>}      label="Calculadora" collapsed active={activeNav === 'calculadora'}       onClick={() => onNavChange('calculadora')} />
+              <NavItem id="finance-dashboard" icon={<LayoutDashboard size={14}/>} label="Dashboard"   collapsed active={activeNav === 'finance-dashboard'} onClick={() => onNavChange('finance-dashboard')} />
+            </>
           )}
 
           {/* ── CONFIGURACIÓN ─────── */}

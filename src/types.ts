@@ -126,6 +126,31 @@ export interface DocumentItem {
   created_at?: string
 }
 
+export interface FinanceProject {
+  id?:              string
+  customer_id:      string | null
+  name:             string
+  tarifa_hora:      number
+  horas_semana:     number
+  semanas:          number
+  cuota_autonomos:  number
+  irpf_pct:         number
+  created_at?:      string
+  customers?:       { id: string; name: string } | null
+}
+
+export interface FinanceExpenses {
+  alquiler:     number
+  alimentacion: number
+  transporte:   number
+  suministros:  number
+  ocio:         number
+  formacion:    number
+  salud:        number
+  gestoria:     number
+  ahorro_obj:   number
+}
+
 export interface Health {
   ok: boolean
   googleMaps?: boolean

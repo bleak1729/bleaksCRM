@@ -9,15 +9,19 @@ import Login             from './components/Login'
 import NewLeadModal      from './components/NewLeadModal'
 import CustomerList           from './components/CustomerList'
 import CalculadoraPage        from './components/FreelanceCalculator/CalculadoraPage'
+import FinanceDashboard       from './components/FinanceDashboard'
 import { getHealth, loadData, saveData, startSearch, getToken, clearToken,
          createCustomer, updateCustomer, deleteCustomer,
          loadCustomers, loadProjects, createProject, updateProject, deleteProject,
          loadContacts, createContact, updateContact, deleteContact,
          loadInvoices, createInvoice, updateInvoice, deleteInvoice,
          loadDocuments, createDocument, updateDocument, deleteDocument,
+         loadFinanceProjects, createFinanceProject, updateFinanceProject, deleteFinanceProject,
+         loadFinanceExpenses, saveFinanceExpenses,
          regenerateRecoveryKey } from './api'
 import type { Lead, LeadContact, ContactsMap, NotesMap, StatusMap,
               Customer, Project, CustomerContact, Invoice, DocumentItem,
+              FinanceProject, FinanceExpenses,
               Health, SearchParams, SearchState } from './types'
 
 interface LeadUpdates {
@@ -74,6 +78,8 @@ export default function App() {
   const [customerContacts,  setCustomerContacts]  = useState<CustomerContact[]>([])
   const [invoices,          setInvoices]          = useState<Invoice[]>([])
   const [documents,         setDocuments]         = useState<DocumentItem[]>([])
+  const [financeProjects,   setFinanceProjects]   = useState<FinanceProject[]>([])
+  const [financeExpenses,   setFinanceExpenses]   = useState<FinanceExpenses>({ alquiler: 400, alimentacion: 280, transporte: 80, suministros: 70, ocio: 100, formacion: 0, salud: 0, gestoria: 0, ahorro_obj: 200 })
   const [editModalLead,  setEditModalLead]  = useState<Lead | null>(null)
   const [showNewLead,    setShowNewLead]    = useState(false)
   const [health,        setHealth]       = useState<Health | null>(null)
@@ -129,6 +135,13 @@ export default function App() {
     loadContacts().then(c => setCustomerContacts(c || [])).catch(() => {})
     loadInvoices().then(i => setInvoices(i || [])).catch(() => {})
     loadDocuments().then(d => setDocuments(d || [])).catch(() => {})
+    loadFinanceProjects().then(p => setFinanceProjects(p || [])).catch(() => {})
+    loadFinanceExpenses().then(e => {
+      if (e) {
+        const { alquiler, alimentacion, transporte, suministros, ocio, formacion, salud, gestoria, ahorro_obj } = e as FinanceExpenses & Record<string, unknown>
+        setFinanceExpenses({ alquiler: +alquiler, alimentacion: +alimentacion, transporte: +transporte, suministros: +suministros, ocio: +ocio, formacion: +formacion, salud: +salud, gestoria: +gestoria, ahorro_obj: +ahorro_obj })
+      }
+    }).catch(() => {})
 
     getHealth()
       .then(setHealth)
@@ -308,6 +321,41 @@ export default function App() {
       setInvoices(prev => prev.filter(i => i.id !== id))
       showToast('Factura eliminada')
     } catch { showToast('Error al eliminar factura') }
+  }, [showToast])
+
+  // Handler que retorna el cliente creado (usado por el flujo de finanzas)
+  const handleCreateCustomerForFinance = useCallback(async (data: Partial<Customer>): Promise<Customer> => {
+    const created = await createCustomer(data)
+    setCustomers(prev => [created, ...prev])
+    showToast('Cliente creado')
+    return created
+  }, [showToast])
+
+  // ── Finance handlers ───────────────────────────────────────────
+  const handleSaveFinanceProject = useCallback(async (data: Partial<FinanceProject>) => {
+    const created = await createFinanceProject(data)
+    setFinanceProjects(prev => [created, ...prev])
+    showToast('Proyecto guardado en finanzas')
+    return created
+  }, [showToast])
+
+  const handleUpdateFinanceProject = useCallback(async (id: string, data: Partial<FinanceProject>) => {
+    const updated = await updateFinanceProject(id, data)
+    setFinanceProjects(prev => prev.map(p => p.id === id ? updated : p))
+    showToast('Proyecto actualizado')
+    return updated
+  }, [showToast])
+
+  const handleDeleteFinanceProject = useCallback(async (id: string) => {
+    await deleteFinanceProject(id)
+    setFinanceProjects(prev => prev.filter(p => p.id !== id))
+    showToast('Proyecto eliminado')
+  }, [showToast])
+
+  const handleSaveFinanceExpenses = useCallback(async (data: FinanceExpenses) => {
+    const saved = await saveFinanceExpenses(data)
+    setFinanceExpenses(saved)
+    showToast('Gastos actualizados')
   }, [showToast])
 
   // ── Document handlers ──────────────────────────────────────────
@@ -502,7 +550,21 @@ export default function App() {
           />
         ) : activeNav === 'calculadora' ? (
           /* ── FINANZAS: CALCULADORA ───────────────────────────── */
-          <CalculadoraPage />
+          <CalculadoraPage
+            customers={customers}
+            onCreateCustomer={handleCreateCustomerForFinance}
+            onSaveFinanceProject={handleSaveFinanceProject}
+          />
+        ) : activeNav === 'finance-dashboard' ? (
+          /* ── FINANZAS: DASHBOARD ─────────────────────────────── */
+          <FinanceDashboard
+            projects={financeProjects}
+            customers={customers}
+            expenses={financeExpenses}
+            onUpdateProject={handleUpdateFinanceProject}
+            onDeleteProject={handleDeleteFinanceProject}
+            onSaveExpenses={handleSaveFinanceExpenses}
+          />
         ) : activeNav === 'clientes' ? (
           /* ── CLIENTES ────────────────────────────────────────── */
           <CustomerList
