@@ -7,7 +7,8 @@ import LeadEditModal     from './components/LeadEditModal'
 import Dashboard         from './components/Dashboard'
 import Login             from './components/Login'
 import NewLeadModal      from './components/NewLeadModal'
-import CustomerList      from './components/CustomerList'
+import CustomerList           from './components/CustomerList'
+import CalculadoraPage        from './components/FreelanceCalculator/CalculadoraPage'
 import { getHealth, loadData, saveData, startSearch, getToken, clearToken,
          createCustomer, updateCustomer, deleteCustomer,
          loadCustomers, loadProjects, createProject, updateProject, deleteProject,
@@ -499,6 +500,9 @@ export default function App() {
             customers={customers}
             onNavigate={setActiveNav}
           />
+        ) : activeNav === 'calculadora' ? (
+          /* ── FINANZAS: CALCULADORA ───────────────────────────── */
+          <CalculadoraPage />
         ) : activeNav === 'clientes' ? (
           /* ── CLIENTES ────────────────────────────────────────── */
           <CustomerList

@@ -4,7 +4,7 @@ import {
   LayoutDashboard, Users, Sun, Moon,
   ChevronLeft, ChevronRight,
   Menu, X, LogOut, Wifi, WifiOff, Search, Settings,
-  ChevronDown, Building2, KeyRound,
+  ChevronDown, Building2, KeyRound, Calculator,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -147,9 +147,10 @@ export function Sidebar({
   const [isOpen,      setIsOpen]      = useState(false);
   const [isCollapsed, setIsCollapsed] = useState(false);
   const [expanded,    setExpanded]    = useState<Record<string, boolean>>({
-    leads:    true,
-    clientes: true,
-    config:   false,
+    leads:     true,
+    clientes:  true,
+    finanzas:  true,
+    config:    false,
   });
 
   useEffect(() => {
@@ -315,6 +316,28 @@ export function Sidebar({
           )}
           {isCollapsed && (
             <NavItem id="clientes" icon={<Building2 size={14}/>} label="Clientes" collapsed active={activeNav === 'clientes'} onClick={() => onNavChange('clientes')} />
+          )}
+
+          {/* ── FINANZAS ──────────── */}
+          <SectionHeader
+            icon={<Calculator size={14}/>}
+            label="Finanzas"
+            expanded={expanded.finanzas}
+            collapsed={isCollapsed}
+            onToggle={() => toggleSection('finanzas')}
+          />
+          {expanded.finanzas && !isCollapsed && (
+            <div className="mb-1">
+              <NavItem
+                id="calculadora" icon={<Calculator size={13}/>}
+                label="Calculadora" collapsed={isCollapsed}
+                active={activeNav === 'calculadora'}
+                onClick={() => onNavChange('calculadora')}
+              />
+            </div>
+          )}
+          {isCollapsed && (
+            <NavItem id="calculadora" icon={<Calculator size={14}/>} label="Calculadora" collapsed active={activeNav === 'calculadora'} onClick={() => onNavChange('calculadora')} />
           )}
 
           {/* ── CONFIGURACIÓN ─────── */}
